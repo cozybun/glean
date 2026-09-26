@@ -14,7 +14,7 @@ let createAnonSessionPromise = null;  // session promise-tracking with global sc
 const BACKUP_EMAIL_STREAK = 5;
 const BACKUP_EMAIL_INTERVAL_MS = 3 * 24 * 60 * 60 * 1000;
 
-const LAZY_FORECAST_SOURCES = {
+const FORECAST_SOURCES = {
   "Los Angeles": "https://forecast.weather.gov/MapClick.php?lat=33.9425&lon=-118.409",
   "Houston": "https://forecast.weather.gov/MapClick.php?lat=29.6524&lon=-95.2772",
   "New York City": "https://forecast.weather.gov/MapClick.php?lat=40.7833546&lon=-73.9649732",
@@ -31,12 +31,18 @@ const HOURLY_LABELS = [
   "5 PM"    // 4 PM
 ];
 const HOURLY_GAME_SWITCH_HOUR = 17; // 16
-const MESOWEST_STATIONS_BY_CITY = {
-  "Los Angeles": "KLAX",
-  "Houston": "KHOU",
-  "New York City": "KNYC",
+const STATIONS = {
+  "Los Angeles": "LAX",
+  "Houston": "HOU",
+  "New York City": "NYC",
 };
-const CITY_STREAK_THRESHOLD = Object.keys(MESOWEST_STATIONS_BY_CITY).length;  // get number of cities for streak threshold
+const CITY_STREAK_THRESHOLD = Object.keys(STATIONS).length;  // get number of cities for streak threshold
+const CITY_EMOJIS = {
+  "Los Angeles": "🎬",
+  "Houston": "🤠",
+  "New York City": "🗽",
+  "Toronto": "🍁"
+};
 
 function normalizeCityKey(value) {
   return String(value || '')
@@ -57,7 +63,7 @@ async function fetchLazyForecasts() {
   };
 
   const results = {};
-  for (const [city, url] of Object.entries(LAZY_FORECAST_SOURCES)) {
+  for (const [city, url] of Object.entries(FORECAST_SOURCES)) {
     try {
       const resp = await fetch(url);
       if (!resp.ok) throw new Error(`Failed to fetch ${city} data`);
@@ -84,14 +90,10 @@ function markLazyEdited() {
 
 // Helper to return full obs URL for a city object
 function getObsUrl(cityObj) {
-  const directStation =
-    cityObj?.mesowestStation || cityObj?.station || cityObj?.stn;
-
-  const stationCode =
-    directStation || MESOWEST_STATIONS_BY_CITY[normalizeCityKey(cityObj?.name || cityObj?.city || cityObj?.label)];
+  const directStation = cityObj?.mesowestStation || cityObj?.station || cityObj?.stn;
+  const stationCode = directStation || STATIONS[normalizeCityKey(cityObj?.name || cityObj?.city || cityObj?.label)];
 
   if (!stationCode) return '';
-
   return `https://mesowest.utah.edu/cgi-bin/droman/meso_base_dyn.cgi?stn=K${encodeURIComponent(stationCode)}`;
 }
 
@@ -113,8 +115,6 @@ export function isValidEmail(email) {
   return /^\S+@\S+\.\S+$/.test(email);
 }
 
-const PROJECT_REF = new URL(SUPABASE_URL).hostname.split('.')[0];
-
 export function isInvalidRefreshTokenError(err) { 
   const msg = String(err?.message || err?.error_description || "");
   return (
@@ -127,6 +127,7 @@ export function isInvalidRefreshTokenError(err) {
   );
 }
 
+const PROJECT_REF = new URL(SUPABASE_URL).hostname.split('.')[0];
 export function clearSupabaseAuthStorage() {
   const collectAndRemove = (store) => {
     const keys = [];
@@ -1634,7 +1635,9 @@ async function buildDailyGrid() {
 
   for (const city of cities) {
     const stationDisplay = getStationDisplay(city);
-    const cityTz = city.timezone || "UTC";
+    const cityEmoji = CITY_EMOJIS[city.name];
+    const stationUrl = stationDisplay ? `https://www.weather.gov/wrh/timeseries?site=${encodeURIComponent(stationDisplay)}`: "";
+    const cityTz = city.timezone;
     const targetDate = forecastDate;
 
     const cityYesterday =
@@ -1685,8 +1688,21 @@ async function buildDailyGrid() {
 
       card.innerHTML = `
         <div class="city-card-header">
-          <span class="city-title">${city.name}</span>
-          ${stationDisplay ? `<small class="city-station">(${stationDisplay})</small>` : ""}
+          <span class="city-title">
+            ${city.name} ${cityEmoji}
+          </span>
+        
+          ${stationUrl ? `
+            <a
+              class="station-source-link"
+              href="${stationUrl}"
+              target="_blank"
+              rel="noopener noreferrer"
+              onclick="event.stopPropagation()"
+            >
+              (${stationDisplay} ↗)
+            </a>
+          ` : ""}
         </div>
         <div class="city-card-content">
           ${showYesterday ? `<p><small>Yesterday: ${yesterdayLabel}</small></p>` : ""}
