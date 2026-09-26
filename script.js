@@ -90,11 +90,10 @@ function markLazyEdited() {
 
 // Helper to return full obs URL for a city object
 function getObsUrl(cityObj) {
-  const directStation = cityObj?.mesowestStation || cityObj?.station || cityObj?.stn;
+  const directStation = cityObj?.station;
   const stationCode = directStation || STATIONS[normalizeCityKey(cityObj?.name || cityObj?.city || cityObj?.label)];
-
   if (!stationCode) return '';
-  return `https://mesowest.utah.edu/cgi-bin/droman/meso_base_dyn.cgi?stn=K${encodeURIComponent(stationCode)}`;
+  return `https://www.weather.gov/wrh/timeseries?site=K${encodeURIComponent(stationCode)}`;
 }
 
 export function setStatus(html, append = false) {
@@ -1688,20 +1687,18 @@ async function buildDailyGrid() {
 
       card.innerHTML = `
         <div class="city-card-header">
-          <span class="city-title">
-            ${city.name} ${cityEmoji}
-          </span>
+          <span class="city-title">${city.name} ${cityEmoji}</span>
         
           ${stationUrl ? `
-            <a
-              class="station-source-link"
-              href="${stationUrl}"
-              target="_blank"
-              rel="noopener noreferrer"
-              onclick="event.stopPropagation()"
-            >
-              (${stationDisplay} ↗)
-            </a>
+            <span class="station-wrapper">(
+              <a
+                class="station-source-link"
+                href="${stationUrl}"
+                target="_blank"
+                rel="noopener noreferrer"
+                onclick="event.stopPropagation()"
+              >${stationDisplay.replace(/^K/, "")}</a>
+            )</span>
           ` : ""}
         </div>
         <div class="city-card-content">
