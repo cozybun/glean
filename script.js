@@ -26,16 +26,9 @@ let lazyPendingContinuation = null;
 let lazyPendingForecastDate = null;
 let lazyUsed = false;
 
-const HOURLY_LABELS = [
-  "11 AM",   // 10 AM,
-  "5 PM"    // 4 PM
-];
-const HOURLY_GAME_SWITCH_HOUR = 17; // 16
-const STATIONS = {
-  "Los Angeles": "LAX",
-  "Houston": "HOU",
-  "New York City": "NYC",
-};
+const HOURLY_LABELS = [ "11 AM", "5 PM" ];  // [ "10 AM", "4 PM" ]
+const HOURLY_GAME_SWITCH_HOUR = 17;  // 16
+const STATIONS = { "Los Angeles": "LAX", "Houston": "HOU", "New York City": "NYC", };
 const CITY_STREAK_THRESHOLD = Object.keys(STATIONS).length;  // get number of cities for streak threshold
 const CITY_EMOJIS = {
   "Los Angeles": "🎬",
@@ -1692,7 +1685,7 @@ async function buildDailyGrid() {
           ${stationUrl ? `
             <span class="station-wrapper">(
               <a
-                class="station-source-link"
+                class="station-link"
                 href="${stationUrl}"
                 target="_blank"
                 rel="noopener noreferrer"
