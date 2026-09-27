@@ -1375,7 +1375,7 @@ function updateHourlyButton() {
     document.querySelector("#hourSelector .selected") !== null;
 
   if (anySelected) {
-    hourlySaveBtn.textContent = "💾 Save Hourly Forecasts";
+    hourlySaveBtn.textContent = "💾 Save Forecasts";
     hourlySaveBtn.disabled = false;
   } else {
     hourlySaveBtn.textContent = "Choose an Hour";
