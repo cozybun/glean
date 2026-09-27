@@ -42,20 +42,26 @@
 
     /* make hourly action buttons match daily button sizing/height/line-height */
     .hourly-action-btn {
-      white-space: nowrap;
       width: 13rem;
-      font-size: 1.3rem
-      font-weight: 700;
-      line-height: 1;
+      min-width: 0;
       height: 3rem !important;
       min-height: 3rem !important;
-      padding: 0 2.2rem;
-      border-radius: 10px;
+      padding: 0.8rem 1rem !important;
+    
+      font-family: inherit;
+      font-size: 1.3rem !important;
+      font-weight: 700;
+      line-height: 1.1;
+      white-space: nowrap;
+    
+      border-radius: 8px;
       border: 1px solid transparent;
       box-sizing: border-box;
+    
       display: inline-flex;
       align-items: center;
       justify-content: center;
+    
       cursor: pointer;
       transition: all 0.2s ease;
       color: var(--text-on-brand);
