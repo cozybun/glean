@@ -1236,8 +1236,7 @@ function formatDisplayDate(ymd) {
     if (p.type === "year") acc.year = p.value;
     return acc;
   }, {});
-
-  return `${parts.day} ${parts.month} ${parts.year}`;
+  return `${parts.day} ${MONTH_ABBR[month - 1]} ${parts.year}`;
 }
 
 // Update current date label on daily page
@@ -1362,7 +1361,6 @@ function getHourlyGameDate() {
   const gameDateLabel =
     `${MONTH_ABBR[gameDateObj.getUTCMonth()]} ` +
     `${gameDateObj.getUTCDate()}, ${gameDateObj.getUTCFullYear()}`;
-
   return { etNow, useTomorrow, gameDate, gameDateLabel };
 }
 
