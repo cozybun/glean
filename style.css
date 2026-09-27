@@ -21,11 +21,13 @@
 
 body {
   font-family: Calibri, Arial, sans-serif;
+  width: 100%;
   max-width: 1000px;
   margin: 2rem auto;
   padding: 1rem;
   background: #f4f6fb;
   font-size: 1.2rem;
+  box-sizing: border-box;
 }
 
 h1 {
