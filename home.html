@@ -379,6 +379,24 @@
       border-color: var(--dark-red);
     }
 
+    body.home-page {
+      width: 100%;
+      max-width: none;
+      margin: 0;
+      padding: 1rem;
+      display: block;
+      box-sizing: border-box;
+    }
+    
+    body.home-page > .page,
+    body.home-page > .home-navbar {
+      width: 100%;
+      max-width: 680px;
+      margin-left: auto;
+      margin-right: auto;
+      box-sizing: border-box;
+    }
+
     @media (max-width: 420px) {
       .category-buttons {
         grid-template-columns: repeat(2, minmax(0, 1fr));
@@ -420,7 +438,7 @@
     }
   </style>
 </head>
-<body>
+<body class="home-page">
     <header class="home-navbar" aria-label="Page controls">
     <span aria-hidden="true"></span>
     <div class="music-wrap">
