@@ -202,9 +202,9 @@
 
     .finance-detail-coins, .finance-detail-aura {
       color: #228B22;
-      font-size: 1.5rem;
+      font-size: 1rem;
       font-weight: 700;
-      margin-top: 12px;
+      margin-top: 8px;
     }
 
     .finance-total,
@@ -2042,18 +2042,21 @@
       gasCircle,
       btcCircle,
       goldCircle
-    ].filter(c => c === "🟢" || c === "🟡").length;  
+    ].filter(c => c === "🟢" || c === "🟡").length;
+  
     const totalCoins = Number(data.coins || 0);
+    const totalAura = Number(data.aura || 0);
+    const currentStreak = Number(streakEl?.textContent) || 0;
   
     const text = [
       "Glean 🔮",
       "",
-      `${dateLabelFromYMD(todayInPT)}    ${successCount}/3`,
+      `${formatShareDate(dateLabelFromYMD(todayInPT))}    ${successCount}/3`,
       "",
       "⛽  ₿  🥇",
       `${gasCircle} ${btcCircle} ${goldCircle}`,
       "",
-      `🪙 ${totalCoins}`
+      `🪙 ${totalCoins}  💗 ${formatSignedNumber(totalAura)}  🌟 ${currentStreak}`
     ].join("\n");
   
     shareBtn.onclick = async () => {
