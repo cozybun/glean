@@ -235,9 +235,9 @@
     }
 
     .lazy-forecast-btn {
-      background: #D2042D;
+      background: #EC5800;  /* persimmon */
       color: white;
-      border: 1px solid #991b1b;
+      border: 1px solid #EC5800;
       border-radius: 8px;
       font-weight: 600;
       padding: 0.6rem 1rem;
@@ -251,23 +251,30 @@
       justify-content: center;
     }
 
-    .lazy-forecast-btn:disabled {
+    .lazy-forecast-btn:hover:not(:disabled) {
+      background: #CC5500;  /* burnt orange */
+      border-color: #CC5500; 
+    }
+
+    .lazy-forecast-btn:disabled, .lazy-forecast-btn:disabled:hover {
+      background: #EC5800;
+      border-color: #EC5800;
       opacity: 0.6;
       cursor: not-allowed;
+      transform: none;
+      box-shadow: none;
     }
 
     .lazy-forecast-badge {
       padding: 0.2rem 0.65rem;
       border-radius: 999px;
-      background: #EC5800;
+      background: var(--brand-red);
       color: white;
       font-size: 0.75rem;
       font-weight: 600;
     }
 
-    .lazy-forecast-badge.hidden {
-      display: none;
-    }
+    .lazy-forecast-badge.hidden { display: none; }
 
     .lazy-warning-modal {
       position: fixed;
@@ -336,15 +343,11 @@
       pointer-events: none;
     }
 
-    #lazyWarningSaveBtn {
-      background: #EF4444;
-      color: #fff;
-    }
+    #lazyWarningSaveBtn { background: var(--brand-red); }
 
-    #lazyWarningBackBtn {
-      background: #E5E7EB;
-      color: #111827;
-    }
+    #lazyWarningSaveBtn:hover { background: var(--dark-red); }
+
+    #lazyWarningBackBtn { background: #EC5800; }
 
     .station-wrapper {
       white-space: nowrap;
@@ -451,7 +454,7 @@
     <div class="lazy-warning-dialog">
       <h2 id="lazyWarningTitle"> Lazy Forecast Penalty </h2>
       <p id="lazyWarningText">
-        Saving the auto-filled Lazy Forecast temps will apply a <strong> –1 Coin and Mood penalty. Also, your streak will not grow. </strong>
+        Saving the auto-filled Lazy Forecast temps will apply a <strong> –2 Coin and Mood penalty. Also, your streak will not grow. </strong>
         Choose <strong> Back </strong> to edit any field or choose <strong> Save </strong> if you accept the penalty for using Lazy Forecast.
       </p>
       <div class="lazy-warning-actions">
@@ -480,7 +483,7 @@
       </div>
     </div>
 
-    <p style="text-align:center; margin:1rem 0;">
+    <p style="text-align:center; margin:1rem 0 1.2rem;">
       Daily temps close at noon local time |  Yesterday's temps shown for reference
     </p>
 
