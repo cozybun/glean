@@ -163,6 +163,38 @@
     .daily-navbar .nav-spacer {
       justify-self: start;
     }
+      
+    .forecast-nav-links {
+      grid-column: 2;
+      display: flex;
+      align-items: stretch;
+      justify-content: center;
+      justify-self: center;
+      gap: 0.5rem;
+    }
+    
+    .forecast-home-btn {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      width: 3rem;
+      align-self: stretch;
+      flex-shrink: 0;
+      box-sizing: border-box;
+      border: 1px solid var(--brand-purple);
+      border-radius: 8px;
+      background: #fff;
+      color: var(--brand-purple);
+      font-size: 1.3rem;
+      line-height: 1;
+      text-decoration: none;
+      transition: all 0.2s ease;
+    }
+    
+    .forecast-home-btn:hover {
+      background: #f5eafa;
+      transform: translateY(-1px);
+    }
     
     #goToHourlyBtn {
       font-size: 1.2rem !important;
