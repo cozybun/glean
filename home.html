@@ -3,8 +3,9 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Home</title>
+  <title> Home 🏡 </title>
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  <link rel="stylesheet" href="style.css" />
   <style>
     :root {
       --text: #000000;
@@ -33,7 +34,7 @@
     }
 
     #restore-btn {
-      background: var(--brand-blue);
+      background: var(--brand-red);
       color: #fff;
       border: 0;
       border-radius: 10px;
@@ -47,7 +48,7 @@
       cursor: pointer;
     }
     #restore-btn:hover {
-      background: var(--blue-dark);
+      background: var(--dark-red);
     }
 
     #restore-backdrop,
@@ -126,7 +127,7 @@
     }
 
     .row button:hover {
-      background: var(--blue-dark);
+      background: var(--dark-blue);
     }
 
     #restore-status,
@@ -188,7 +189,7 @@
     }
 
     #save-account:hover {
-      background: var(--blue-dark);
+      background: var(--dark-blue);
     }
 
     #close-restore,
@@ -347,7 +348,7 @@
     }
     
     #temps-button:hover {
-      background: var(--blue-dark);
+      background: var(--dark-blue);
     }
     
     #finance-button {
@@ -356,7 +357,7 @@
     }
     
     #finance-button:hover {
-      background: var(--green-dark);
+      background: var(--dark-green);
     }
     
     #questions-button {
@@ -365,20 +366,20 @@
     }
     
     #questions-button:hover {
-      background: var(--purple-dark);
+      background: var(--dark-purple);
     }
 
     #restore-btn {
       margin-bottom: 100px;
-      background: #d70040;
-      border-color: #d70040;
+      background: var(--brand-red);
+      border-color: var(--brand-red);
       line-height: 1.3;
       color: white;
     }
     
     #restore-btn:hover {
-      background: #b80036;
-      border-color: #b80036;
+      background: var(--dark-red);
+      border-color: var(--dark-red);
     }
 
     @media (max-width: 420px) {
@@ -398,13 +399,13 @@
       }
       #restore-btn {
         margin-bottom: 100px;
-        background: #d70040;
-        border-color: #d70040;
+        background: var(--brand-red);
+        border-color: var(--brand-red);
         color: white;
       }
       #restore-btn:hover {
-        background: #b80036;
-        border-color: #b80036;
+        background: var(--dark-red);
+        border-color: var(--dark-red);
       }
       #restore-status {
         text-align: center;
