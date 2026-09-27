@@ -1681,15 +1681,13 @@ async function buildDailyGrid() {
           <span class="city-title">${city.name} ${cityEmoji}</span>
         
           ${stationUrl ? `
-            <span class="station-wrapper">(
-              <a
-                class="station-link"
-                href="${stationUrl}"
-                target="_blank"
-                rel="noopener noreferrer"
-                onclick="event.stopPropagation()"
-              >${stationDisplay.replace(/^K/, "")}</a>
-            )</span>
+            <span class="station-wrapper">(<a
+              class="station-link"
+              href="${stationUrl}"
+              target="_blank"
+              rel="noopener noreferrer"
+              onclick="event.stopPropagation()"
+            >${stationDisplay.replace(/^K/, "")}</a>)</span>
           ` : ""}
         </div>
         <div class="city-card-content">
