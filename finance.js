@@ -17,6 +17,7 @@ const FINANCE_ASSETS = [
     label: "Gas",
     emoji: "⛽",
     name: "(US average gas price)",
+    url: "https://gasprices.aaa.com",
     inputId: "gasPriceInput",
     sliderId: "gasPriceSlider",
     cacheKey: "finance:latest-gas",
@@ -34,6 +35,7 @@ const FINANCE_ASSETS = [
     label: "Bitcoin",
     emoji: "₿",
     name: "(BTC price at 1PM)",
+    url: "https://www.coinbase.com/price/bitcoin",
     inputId: "btcPriceInput",
     sliderId: "btcPriceSlider",
     cacheKey: "finance:latest-btc",
@@ -51,6 +53,7 @@ const FINANCE_ASSETS = [
     label: "Gold",
     emoji: "🥇",
     name: "(1OZ price at 2PM)",
+    url: "https://www.tradingview.com/chart/?symbol=COMEX%3A1OZ1%21",
     inputId: "goldPriceInput",
     sliderId: "goldPriceSlider",
     cacheKey: "finance:latest-gold",
@@ -376,7 +379,12 @@ async function buildFinanceGrid() {
         <div class="asset-card-header asset-card-header--finance">
           <div class="asset-emoji">${asset.emoji}</div>
           <div class="asset-title asset-title--finance">${asset.label}</div>
-          <small class="asset-name asset-name--finance">${asset.name}</small>
+          <small class="asset-name asset-name--finance"><a
+            class="finance-link"
+            href="${asset.url}"
+            target="_blank"
+            rel="noopener noreferrer"
+          >${asset.name}</a></small>
         </div>
 
         <div class="asset-card-content asset-card-content--finance">
