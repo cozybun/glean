@@ -200,7 +200,9 @@
       margin-top: 10px;
     }
 
-    .finance-detail-coins {
+    .finance-detail-coins, .finance-detail-aura {
+      color: #228B22;
+      font-size: 1.5rem;
       font-weight: 700;
       margin-top: 12px;
     }
@@ -2289,8 +2291,17 @@
     const btcCircle = financeCircle(data.coins_btc);
     const goldCircle = financeCircle(data.coins_gold);
 
-    const allScored = data.coins_gas != null && data.coins_btc != null && data.coins_gold != null;
-    setShareEnabled(allScored, "Score shareable once all assets are scored");
+    const anyScored = data.coins_gas != null || data.coins_btc != null || data.coins_gold != null;
+    const nowPT = new Intl.DateTimeFormat("en-US", {
+      timeZone: "America/Los_Angeles",
+      hour: "numeric",
+      minute: "numeric",
+      hour12: false
+    }).formatToParts(new Date());
+    const hourPT = Number(nowPT.find(p => p.type === "hour").value);
+    const minutePT = Number(nowPT.find(p => p.type === "minute").value);
+    const finalScoringTimePassed = hourPT > 14 || (hourPT === 14 && minutePT >= 10);
+    setShareEnabled(anyScored && finalScoringTimePassed, "Score shareable once all assets are scored");
   
     const successCount = [
       gasCircle,
@@ -2345,6 +2356,7 @@
           }</div>
     
           <div class="finance-detail-coins">🪙 ${data.coins_gas ?? 0}</div>
+          <div class="finance-detail-aura">💗 ${formatSignedNumber(data.aura_gas ?? 0)}</div>
         </div>
     
         <div>
@@ -2359,6 +2371,7 @@
           <div>${formatFinanceValue(data.error_btc, "btc")}</div>
     
           <div class="finance-detail-coins">🪙 ${data.coins_btc ?? 0}</div>
+          <div class="finance-detail-aura">💗 ${formatSignedNumber(data.aura_btc ?? 0)}</div>
         </div>
     
         <div>
@@ -2373,6 +2386,7 @@
           <div>${formatFinanceValue(data.error_gold, "gold")}</div>
     
           <div class="finance-detail-coins">🪙 ${data.coins_gold ?? 0}</div>
+          <div class="finance-detail-aura">💗 ${formatSignedNumber(data.aura_gold ?? 0)}</div>
         </div>
     
       </div>
