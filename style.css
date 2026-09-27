@@ -1,7 +1,7 @@
 /* App-wide color palette (for all non-leaderboard pages) */
 :root {
   --brand-purple: #DA70D6;  /* orchid */
-  --dark-purple: #9932CC; /* dark orchid */
+  --dark-purple: #9370DB; /* medium purple */
 
   --brand-blue: #6495ED;  /* cornflower blue */
   --dark-blue: #4169E1;  /* royal blue */
