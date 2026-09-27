@@ -1,18 +1,21 @@
 /* App-wide color palette (for all non-leaderboard pages) */
 :root {
-  --brand-purple: #BF40BF;  /* bright purple */
-  --dark-purple: #A63BA6; 
+  --brand-purple: #DA70D6;  /* orchid */
+  --dark-purple: #9932CC; /* dark orchid */
 
-  --brand-blue: #4169E1;  /* royal blue */
-  --dark-blue: #3556CA;
+  --brand-blue: #6495ED;  /* cornflower blue */
+  --dark-blue: #4169E1;  /* royal blue */
 
-  --brand-green: #228B22;  /* forest green */
-  --dark-green: #1D7A1D;
+  --brand-green: #32CD32;  /* lime green */
+  --dark-green: #228B22;  /* forest green */
+
+  --brand-red: #D70040;  /* carmine */
+  --dark-red: #B22222;  /* fire brick */
 
   --soft-blue: #E8EDFF;
   --soft-blue-border: #B9C7F4;
-  --shadow-blue: rgba(65, 105, 225, 0.28);
-  --shadow-green: rgba(34, 139, 34, 0.28);
+  --shadow-blue: rgba(100, 149, 237, 0.28);
+  --shadow-green: rgba(50, 205, 50, 0.28);
   --text-on-brand: #ffffff;
 }
 
