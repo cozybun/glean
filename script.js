@@ -2085,8 +2085,8 @@ async function handleDailySubmit(e) {
 
   const payload = [...rowsByCity.values()].map(
     ({ _hasHigh, _hasLow, ...row }) => ({
-    ...row,
-    lazy_used: row.lazyUsed,
+      ...row,
+      lazy_used: false,
     })
   );
 
@@ -2096,9 +2096,14 @@ async function handleDailySubmit(e) {
   }
 
   const attemptSave = async () => {
+    const rowsToSave = payload.map((row) => ({  // set at save time, not when payload is first built
+      ...row,
+      lazy_used: Boolean(lazyUsed),
+    }));
+    
     const result = await upsertWithSessionRecovery({
       table: "daily_forecasts",
-      rows: payload,
+      rows: rowsToSave,
       onConflict: "user_id,city_id,date",
       allowAnonymous: false,
     });
@@ -2107,7 +2112,7 @@ async function handleDailySubmit(e) {
       const errMsg = result?.error?.message ? `: ${result.error.message}` : "";
       console.error("Forecast save failed:", result?.error);
       setStatus(`<span style="color:red;"> Save failed ${errMsg}</span>`);
-      return;
+      return false;
     }
 
     const finalUserId = result.userId || session.user.id;
@@ -2153,6 +2158,7 @@ async function handleDailySubmit(e) {
     lazyUsed = false;
     lazyPendingContinuation = null;
     lazyPendingForecastDate = null;
+    return true;
   };
 
   if (  // check lazy state before save attempt
@@ -2472,34 +2478,55 @@ function initLazyForecastUI() {
       );
     }
   });
-
+  
   lazySave?.addEventListener("click", async () => {
     if (!(lazyPendingContinuation && lazyPendingForecastDate)) {
       closeModal();
       return;
     }
-
-    lazyPenaltyAppliedForDate.add(lazyPendingForecastDate);
-    markLazyEdited();
+  
+    const forecastDate = lazyPendingForecastDate;
     const continuation = lazyPendingContinuation;
-    lazyPendingContinuation = null;
-    lazyPendingForecastDate = null;
+  
+    if (lazySave.disabled) return;  // prevent repeated clicks while the request runs
+    lazySave.disabled = true;  
     closeModal();
-
+  
     try {
-      await applyLazyPenalty();
-      lazyUsed = true;
-      await continuation();
-
-      requestAnimationFrame(() => {  // reapply the penalty status after the continuation finishes so it cannot be overwritten
+      if (!lazyPenaltyAppliedForDate.has(forecastDate)) {  // only apply penalty if it has not already been applied to this date during current page session
+        await applyLazyPenalty();  
+        lazyPenaltyAppliedForDate.add(forecastDate);  // record success after RPC succeeds
+      }
+  
+      lazyUsed = true;  // keep Lazy status for the upcoming forecast save
+      markLazyEdited();  // prevent the same warning from appearing again  
+      const saved = await continuation();
+  
+      if (!saved) {
         setStatus(
-          '<span style="color:#16a34a;"> -2 🪙 & -2 💗 penalty applied for using Lazy Forecast. No streak increase. Forecasts saved! </span>'
+          '<span style="color:red;"> Lazy penalty applied, ' +
+          'but the forecast did not save. Please try saving again. ' +
+          'Do not refresh the page yet.</span>'
+        );
+        return;
+      }
+  
+      requestAnimationFrame(() => {
+        setStatus(
+          '<span style="color:#16a34a;">' +
+          ' -2 🪙 & -2 💗 penalty applied for using Lazy Forecast. ' +
+          'No streak increase. Forecasts saved!' +
+          '</span>'
         );
       });
     } catch (err) {
       setStatus(
-        `<span style="color:red;"> Lazy Forecast penalty failed: ${String(err?.message || err)} </span>`
+        `<span style="color:red;"> Lazy Forecast failed: ${
+          String(err?.message || err)
+        }</span>`
       );
+    } finally {
+      lazySave.disabled = false;
     }
   });
 
