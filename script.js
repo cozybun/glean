@@ -2129,8 +2129,17 @@ async function handleDailySubmit(e) {
     );
     await buildDailyGrid();
 
-    const streakResult = await incrementDailyStreak(client, finalUserId, forecastDate);
-
+    const streakResult = lazyUsed
+      ? {
+          ok: false,
+          reason: "NO_CHANGE",
+          message: "Lazy Forecast saved. No streak increase.",
+        }
+      : await incrementDailyStreak(
+          client,
+          finalUserId,
+          forecastDate
+        );
     if (streakResult.ok) {
       await promptAndSaveBackupEmail(streakResult.data.current_streak);
       setStatus(`<span style="color:#16a34a;">${streakResult.message}</span>`, true);
