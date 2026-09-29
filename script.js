@@ -797,12 +797,6 @@ export async function loadUserScopedDataOrEmpty(queryBuilder) {
 async function checkIncrementDailyStreak(payload, forecastDate, explicitUserId = null) {
   const uid = explicitUserId || userId;
   if (!uid) return { ok: false, reason: 'NO_USER_ID' };
-  const isFirstForecastEver = !priorForecastCount;
-  if (countErr) {
-    return { ok: false, reason: "COUNT_FORECASTS_FAILED", error: countErr.message };
-  }
-
-  const isFirstForecastEver = !priorForecastCount;
 
   const newHighCityIds = new Set(
     payload
@@ -851,7 +845,10 @@ async function checkIncrementDailyStreak(payload, forecastDate, explicitUserId =
   if (statsErr) {
     return { ok: false, reason: 'FETCH_STATS_FAILED', error: statsErr.message };
   } 
-  if (stats?.last_streak_date === forecastDate) {
+  if (  // make the preview reject older dates & agree with actual award function
+    stats?.last_streak_date &&
+    forecastDate <= stats.last_streak_date
+  ) {
     return {
       ok: false,
       reason: "ALREADY_AWARDED",
@@ -859,13 +856,21 @@ async function checkIncrementDailyStreak(payload, forecastDate, explicitUserId =
       countAfter,
     };
   }
+  const previousDay = new Date(`${forecastDate}T00:00:00Z`);
+  previousDay.setUTCDate(previousDay.getUTCDate() - 1);  
+  const yesterdayYMD = previousDay.toISOString().slice(0, 10);
+  
+  const nextStreak =
+    stats?.last_streak_date === yesterdayYMD
+      ? Number(stats?.current_streak || 0) + 1
+      : 1;
 
   return {
     ok: true,
-    reason: 'STREAK_WOULD_INCREMENT',
+    reason: "STREAK_WOULD_INCREMENT",
     countBefore,
     countAfter,
-    nextStreak: Number(stats?.current_streak || 0) + 1
+    nextStreak,
   };
 }
 
@@ -891,14 +896,11 @@ async function incrementDailyStreak(
     };
   }
 
-  const CITY_STREAK_THRESHOLD = 3;
-
   const toYMD = (value) => {
     if (typeof value !== "string" ||
         !/^\d{4}-\d{2}-\d{2}$/.test(value)) {
       return null;
     }
-
     const date = new Date(`${value}T00:00:00Z`);
 
     return Number.isFinite(date.getTime()) &&
@@ -908,7 +910,6 @@ async function incrementDailyStreak(
   };
 
   const targetYMD = toYMD(forecastDate);
-
   if (!targetYMD) {
     return {
       ok: false,
@@ -1026,7 +1027,6 @@ async function incrementDailyStreak(
       `${targetYMD}T00:00:00Z`
     );
     previousDay.setUTCDate(previousDay.getUTCDate() - 1);
-
     const yesterdayYMD = previousDay.toISOString().slice(0, 10);
     const extendsStreak = lastAwardDate === yesterdayYMD;
 
@@ -1061,7 +1061,6 @@ async function incrementDailyStreak(
         error: updateError,
       };
     }
-
     const auraGained = nextAura - currentAura;
 
     return {
