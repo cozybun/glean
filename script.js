@@ -1050,7 +1050,7 @@ async function incrementDailyStreak(
         current_streak: nextStreak,
         record_streak: nextRecord,
         aura: nextAura,
-        last_streak_award_date: targetYMD,
+        last_streak_date: targetYMD,
       })
       .eq("user_id", userId);
 
