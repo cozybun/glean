@@ -708,6 +708,7 @@
         const yBottom = height - bottom;
         const yTop = top;
       
+        const displayMax = value > 0 ? value : 1;  // value 0 edge case
         const y = value > 0 ? yTop : yBottom;
       
         coinChart.innerHTML = `
@@ -724,7 +725,7 @@
             y="${yTop + 4}"
             text-anchor="end"
           >
-            ${Math.round(value)}
+            ${Math.round(displayMax)}
           </text>
       
           <line
