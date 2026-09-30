@@ -10,6 +10,7 @@
       --dark-blue: #4169E1;
       --brand-green: #3E9B0A;
       --dark-green: #228B22;
+      --dark-purple: #9370DB;
     }
   </style>
   <style>
@@ -25,7 +26,6 @@
       --media-bg: #f3edff;
       --media-text: #9b73ff;
       --media-small: #8f6dff;
-      --media-muted: #7759d1;
     }
 
     * { box-sizing: border-box; }
@@ -95,9 +95,10 @@
     .learn-copy {
       display: none;
       text-align: center;
-      color: var(--media-muted);
+      color: var(--dark-purple);
       line-height: 1.5;
       max-width: 100%;
+      font-size: 1.1rem;
     }
 
     .learn-copy.visible {
@@ -174,7 +175,6 @@
     <h2> The World's Toughest Game. Forecast Solo or with Friends </h2>
 
     <section class="media-slot" id="mediaSlot" aria-label="Media or info area">
-      <small id="placeholderText" class="hidden">Image / animation placeholder</small>
 
       <div class="muted status-note" id="alphaNotice">
         <p> Hello visitor! This game is currently in Private Alpha. Thank you for trying it. <br>
@@ -198,21 +198,17 @@
     const learnBtn = document.getElementById("learnBtn");
     const tryBtn = document.getElementById("tryBtn");
     const learnPanel = document.getElementById("learnPanel");
-    const placeholderText = document.getElementById("placeholderText");
     const alphaNotice = document.getElementById("alphaNotice");
-    placeholderText.classList.add("hidden");
     alphaNotice.classList.remove("hidden");
 
     learnBtn.addEventListener("click", () => {
       const isShowing = learnPanel.classList.toggle("visible");
-      placeholderText.classList.toggle("hidden", isShowing);
       alphaNotice.classList.toggle("hidden", isShowing);
       learnBtn.textContent = isShowing ? "Hide About" : "About";
     });
 
     tryBtn.addEventListener("click", () => {
       learnPanel.classList.remove("visible");
-      placeholderText.classList.add("hidden");
       alphaNotice.classList.remove("hidden");
       learnBtn.textContent = "About";
 
