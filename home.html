@@ -689,13 +689,15 @@
       const user = await getCurrentSessionUser();
       currentUser = user;
     
-      if (isAuthenticatedUser(user)) {
-        restoreWrap.style.display = "none";
+      restoreWrap.style.display = user?.id  // restore is only for true new visitor, not Supabase anon user
+        ? "none"
+        : "block";
+    
+      if (isAuthenticatedUser(user)) {  // account settings remain for full authenticated accounts only
         settingsBtn.style.display = "";
         settingsBtn.classList.add("show");
         await loadAccountProfile(user);
       } else {
-        restoreWrap.style.display = "block";
         settingsBtn.classList.remove("show");
         settingsBtn.style.display = "none";
         closeAccountSettingsModal();
