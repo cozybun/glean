@@ -92,7 +92,7 @@
       font-weight: 600;
     }
 
-    .learn-copy {
+    .learn-text {
       display: none;
       text-align: center;
       color: var(--dark-purple);
@@ -101,14 +101,12 @@
       font-size: 1.1rem;
     }
 
-    .learn-copy.visible {
+    .learn-text.visible {
       display: block;
       animation: fadeIn .2s ease-out;
     }
 
-    .hidden {
-      display: none;
-    }
+    .hidden { display: none !important; }
 
     .actions {
       display: grid;
@@ -180,7 +178,7 @@
         <p> Hello visitor! This game is currently in Private Alpha. Thank you for trying it. <br>
         <br> I'm a solo dev aiming to polish and push updates. Please be patient and stay tuned! 😊 </p>
       </div>
-      <div id="learnPanel" class="learn-copy">
+      <div id="learnPanel" class="learn-text">
         <p> Make forecasts for everyday events and get simple shareable scores of your accuracy. <br>
           <br> Play this game to compete socially, win cute prizes, and build better forecasting skills. <br>
           <br> Click <strong> Try </strong> to start your Glean forecasting journey :)
