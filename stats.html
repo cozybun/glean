@@ -48,6 +48,16 @@
       text-align: center;
     }
 
+    #homeBtn {
+      background: var(--brand-purple);
+      color: white;
+      box-shadow: 0 6px 14px rgba(139, 92, 246, 0.24);
+    }
+    
+    #homeBtn:hover {
+      background: var(--dark-purple);
+    }
+
     .music-wrap {
       justify-self: end;
       display: inline-flex;
@@ -141,14 +151,13 @@
     .value {
       font-size: 1.5rem;
       font-weight: 750;
-      color: var(--brand-purple);
+      color: var(--brand-green);
       margin: 0;
     }
 
-    .value.aura { color: var(--brand-purple); }
-    .value.aura.glowing { color: #008000; }
-    .value.aura.fading { color: #ff0000; }
-    .value.aura.neutral { color: #800080; }
+    .value.aura.glowing { color: var(--brand-purple) };
+    .value.aura.fading { color: var(--brand-red) };
+    .value.aura.neutral { color: #CC5500 };
 
     .meta {
       margin-top: 14px;
@@ -188,15 +197,6 @@
 
     button.secondary:hover {
       background: #d1d5db;
-    }
-
-    button.cozy {
-      background: var(--brand-purple);
-      box-shadow: 0 6px 14px rgba(139, 92, 246, 0.24);
-    }
-
-    button.cozy:hover {
-      background: var(--brand-purple-hover);
     }
 
     .loading,
