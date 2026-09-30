@@ -781,6 +781,110 @@
       box-shadow: none !important;
       filter: none !important;
     }
+
+        /* Score toast */
+    .score-toast {
+      position: fixed;
+      top: 20px;
+      left: 50%;
+      transform: translate(-50%, -10px);
+      width: min(88vw, 360px);
+      box-sizing: border-box;
+      padding: 18px 20px 14px;
+      background: #ffffff;
+      border: 1px solid #dbe0ea;
+      border-radius: 16px;
+      box-shadow: 0 14px 32px rgba(15, 23, 42, 0.18);
+      z-index: 2000;
+      text-align: center;
+
+      opacity: 0;
+      visibility: hidden;
+      pointer-events: none;
+
+      transition:
+        opacity 0.35s ease,
+        transform 0.35s ease,
+        visibility 0.35s ease;
+    }
+
+    .score-toast.is-visible {
+      opacity: 1;
+      visibility: visible;
+      pointer-events: auto;
+      transform: translate(-50%, 0);
+    }
+
+    .score-toast-title {
+      margin: 0 0 14px;
+      font-size: 1.3rem;
+      font-weight: 800;
+    }
+
+    .score-toast-summary {
+      font-size: 1.1rem;
+      font-weight: 700;
+      line-height: 1.7;
+    }
+
+    .score-toast-circles {
+      margin: 10px 0;
+      font-size: 1.5rem;
+      word-spacing: 6px;
+    }
+
+    .score-toast-stats {
+      margin-top: 8px;
+      font-size: 1.05rem;
+      font-weight: 700;
+    }
+
+    .score-toast-message {
+      margin: 16px 0;
+      font-size: 1.05rem;
+      font-weight: 650;
+      line-height: 1.4;
+    }
+
+    .score-toast-controls {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 14px;
+      margin-top: 4px;
+    }
+
+    .score-toast-hide-label {
+      display: inline-flex;
+      align-items: center;
+      gap: 7px;
+      font-size: 0.9rem;
+      cursor: pointer;
+    }
+
+    .score-toast-hide-label input {
+      width: 17px;
+      height: 17px;
+      margin: 0;
+      cursor: pointer;
+    }
+
+    .score-toast-close {
+      width: 36px !important;
+      min-width: 36px !important;
+      height: 36px;
+      padding: 0 !important;
+      border: 0;
+      border-radius: 50%;
+      background: var(--brand-green);
+      color: #ffffff;
+      font-size: 1.15rem;
+      line-height: 1;
+    }
+
+    .score-toast-close:hover {
+      background: var(--brand-green-hover);
+    }
     
     @media (max-width: 700px) {
       body {
@@ -978,6 +1082,38 @@
   </div>
   
   <div id="scoreErrorBanner"></div>
+    <aside
+    id="scoreToast"
+    class="score-toast"
+    aria-live="polite"
+    aria-hidden="true"
+  >
+    <div class="score-toast-title">Glean 🔮</div>
+
+    <div class="score-toast-summary">
+      <div id="scoreToastDate"></div>
+      <div id="scoreToastCircles" class="score-toast-circles"></div>
+      <div id="scoreToastStats" class="score-toast-stats"></div>
+    </div>
+
+    <div id="scoreToastMessage" class="score-toast-message"></div>
+
+    <div class="score-toast-controls">
+      <label class="score-toast-hide-label">
+        <input id="scoreToastDontShow" type="checkbox" />
+        Don't show again
+      </label>
+
+      <button
+        id="scoreToastClose"
+        class="score-toast-close"
+        type="button"
+        aria-label="Dismiss score message"
+      >
+        ✓
+      </button>
+    </div>
+  </aside>
 
   <div id="scoreFaqModal" class="score-faq-modal" aria-hidden="true" aria-labelledby="scoreFaqTitle">
     <div class="score-faq-panel" role="dialog" aria-modal="true">
@@ -1092,9 +1228,133 @@
   let bannerTimer = null;
   let scoreMusicState = "ambient";
 
-  if (!SUPABASE_PUB_KEY) {
-    console.error("Missing Supabase publishable key");
+  let scoreToastTimer = null;
+  let scoreToastShownKey = null;
+  const SCORE_TOAST_HIDDEN_KEY = "glean_score_messages_hidden";
+
+  const scoreMessages = {
+    poor: [
+      "The future got away this time!",
+      "A tricky day for forecasting.",
+      "A tough day for fortune telling.",
+      "The crystal ball was a bit foggy.",
+      "Even good forecasters have off days.",
+      "The future pulled a fast one!",
+      "Your next forecast will be better!"
+    ],
+
+    mid: [
+      "You did a good job!",
+      "One decent read is a good start.",
+      "You're onto something accurate.",
+      "A little glimpse of the future!",
+      "One prediction landed nicely.",
+      "Your forecasting senses are tingling.",
+      "The future is getting clearer."
+    ],
+
+    good: [
+      "Congrats, you did great forecasting!",
+      "The future can't hide from you.",
+      "Your crystal ball is sparkling!",
+      "Look at you, calling the future!",
+      "Your forecasts were sharp!",
+      "A fine day for fortune telling.",
+      "You've got an eye for tomorrow!"
+    ]
+  };
+
+  function dismissScoreToast(savePreference = false) {
+    const toast = document.getElementById("scoreToast");
+
+    if (scoreToastTimer) {
+      clearTimeout(scoreToastTimer);
+      scoreToastTimer = null;
+    }
+
+    if (savePreference) {
+      localStorage.setItem(SCORE_TOAST_HIDDEN_KEY, "true");
+    }
+
+    if (!toast) return;
+
+    toast.classList.remove("is-visible");
+    toast.setAttribute("aria-hidden", "true");
   }
+
+  function showScoreToast({
+    category,
+    dateLabel,
+    successCount,
+    totalCount = 3,
+    circles = [],
+    coins = 0,
+    aura = 0,
+    streak = 0
+  }) {
+    if (
+      localStorage.getItem(SCORE_TOAST_HIDDEN_KEY) === "true" ||
+      !Number.isFinite(Number(successCount))
+    ) {
+      return;
+    }
+
+    const toastKey = `${category}:${dateLabel}`;
+    if (scoreToastShownKey === toastKey) return;  // do not redisplay same completed score during the page visit
+    scoreToastShownKey = toastKey;
+
+    const tier =
+      Number(successCount) === 0
+        ? "poor"
+        : Number(successCount) === 1
+          ? "mid"
+          : "good";
+
+    const messages = scoreMessages[tier];
+    const message = messages[Math.floor(Math.random() * messages.length)];
+    const toast = document.getElementById("scoreToast");
+    const dateEl = document.getElementById("scoreToastDate");
+    const circlesEl = document.getElementById("scoreToastCircles");
+    const statsEl = document.getElementById("scoreToastStats");
+    const messageEl = document.getElementById("scoreToastMessage");
+    const dontShowEl = document.getElementById("scoreToastDontShow");
+
+    if (!toast || !dateEl || !circlesEl || !statsEl || !messageEl) return;
+    dateEl.textContent = `${formatShareDate(dateLabel)}    ${successCount}/${totalCount}`;
+    circlesEl.textContent = circles.join(" ");
+
+    statsEl.textContent =
+      `🪙 ${Math.round(Number(coins) || 0)}   ` +
+      `💗 ${formatSignedNumber(aura)}   ` +
+      `🌟 ${Math.round(Number(streak) || 0)}`;
+
+    messageEl.textContent = message;
+    if (dontShowEl) dontShowEl.checked = false;
+    toast.classList.add("is-visible");
+    toast.setAttribute("aria-hidden", "false");
+
+    scoreToastTimer = setTimeout(() => {
+      dismissScoreToast(false);
+    }, 10000);
+  }
+
+  const scoreToastEl = document.getElementById("scoreToast");
+  const scoreToastClose = document.getElementById("scoreToastClose");
+  const scoreToastDontShow = document.getElementById("scoreToastDontShow");
+
+  function stopScoreToastTimer() {
+    if (scoreToastTimer) {
+      clearTimeout(scoreToastTimer);
+      scoreToastTimer = null;
+    }
+  }
+
+  scoreToastEl?.addEventListener("pointerdown", stopScoreToastTimer);
+  scoreToastEl?.addEventListener("focusin", stopScoreToastTimer);
+  scoreToastEl?.addEventListener("change", stopScoreToastTimer);
+
+  scoreToastClose?.addEventListener("click", () => { dismissScoreToast(scoreToastDontShow?.checked === true);});
+  if (!SUPABASE_PUB_KEY) { console.error("Missing Supabase publishable key"); }
 
   if (!window.supabase || !window.supabase.createClient) {
     showBanner("Supabase SDK failed to load", true);
@@ -2416,6 +2676,20 @@
     if (financeGrid) { financeGridSlot.appendChild(financeGrid); }
     if (financeFraction) { financeGridSlot.appendChild(financeFraction); }
     buildFinanceShare(data);
+    if (anyScored && finalScoringTimePassed) {
+      setTimeout(() => {
+        showScoreToast({
+          category: "finance",
+          dateLabel: dateLabelFromYMD(todayInPT),
+          successCount,
+          totalCount: 3,
+          circles: [gasCircle, btcCircle, goldCircle],
+          coins: totalCoins,
+          aura: financeAura,
+          streak: currentStreak
+        });
+      },500);
+    }
   }
   
   async function loadScore() {
@@ -2672,18 +2946,30 @@
         lineEl.textContent = "No forecasts submitted for yesterday";
         detail.appendChild(lineEl);
       }
-
       scoreListEl.appendChild(row);
     });
 
     const count = Math.min(scoreListEl.children.length, 3);
     scoreListEl.dataset.cols = String(count);
-
     renderCityCircles(scores);
     renderScoreFractionLine(dailySummary, true);
-
     buildShare(scores, totalCoins, totalAura, currentStreak, dailySummary);
     revealRows(scores.length, false, currentStreak, totalCoins, totalAura);
+
+    if (dailySummary) {
+      setTimeout(() => {
+        showScoreToast({
+          category: "temps",
+          dateLabel: ydayLabel,
+          successCount: dailySummary.successCount,
+          totalCount: dailySummary.totalCount,
+          circles: dailySummary.circlesByCity,
+          coins: totalCoins,
+          aura: totalAura,
+          streak: currentStreak
+        });
+      }, 500);
+    }
   }
 
   client.auth.onAuthStateChange(async (_event, session) => {
