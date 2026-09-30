@@ -699,6 +699,68 @@
       const values = coinHistoryRows.map(row =>
         Number(row[coinChartMode]) || 0
       );
+
+      if (coinHistoryRows.length === 1) {  // fix axes format for 1st data point
+        const value = values[0];
+        const date = formatCoinDate(coinHistoryRows[0].date);
+      
+        const x = left + chartWidth / 2;
+        const yBottom = height - bottom;
+        const yTop = top;
+      
+        const y = value > 0 ? yTop : yBottom;
+      
+        coinChart.innerHTML = `
+          <line
+            class="coin-chart-grid"
+            x1="${left}"
+            y1="${yTop}"
+            x2="${width - right}"
+            y2="${yTop}"
+          />
+          <text
+            class="coin-chart-label"
+            x="${left - 8}"
+            y="${yTop + 4}"
+            text-anchor="end"
+          >
+            ${Math.round(value)}
+          </text>
+      
+          <line
+            class="coin-chart-grid"
+            x1="${left}"
+            y1="${yBottom}"
+            x2="${width - right}"
+            y2="${yBottom}"
+          />
+          <text
+            class="coin-chart-label"
+            x="${left - 8}"
+            y="${yBottom + 4}"
+            text-anchor="end"
+          >
+            0
+          </text>
+      
+          <circle
+            class="coin-chart-dot"
+            cx="${x}"
+            cy="${y}"
+            r="4"
+          />
+      
+          <text
+            class="coin-chart-label"
+            x="${x}"
+            y="${height - 8}"
+            text-anchor="middle"
+          >
+            ${date}
+          </text>
+        `;
+        return;
+      }
     
       const maxValue = Math.max(...values, 1);
       const minValue = Math.min(...values, 0);
