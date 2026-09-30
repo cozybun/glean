@@ -397,6 +397,75 @@
       box-sizing: border-box;
     }
 
+    .coin-history-card {
+      width: 100%;
+      max-width: 520px;
+      margin: 2rem auto 0;
+    }
+    
+    .coin-history-toggle {
+      display: flex;
+      justify-content: center;
+      gap: 0.5rem;
+      margin-bottom: 0.8rem;
+    }
+    
+    .coin-history-toggle button {
+      border: 1px solid var(--brand-purple);
+      background: transparent;
+      color: var(--dark-purple);
+      border-radius: 999px;
+      padding: 0.45rem 0.8rem;
+      font: inherit;
+      font-weight: 700;
+      cursor: pointer;
+    }
+    
+    .coin-history-toggle button.active {
+      background: var(--brand-purple);
+      color: white;
+    }
+    
+    .coin-chart-wrap {
+      width: 100%;
+    }
+    
+    #coin-chart {
+      display: block;
+      width: 100%;
+      height: auto;
+      overflow: visible;
+    }
+    
+    .coin-chart-grid {
+      stroke: currentColor;
+      opacity: 0.12;
+      stroke-width: 1;
+    }
+    
+    .coin-chart-line {
+      fill: none;
+      stroke: var(--brand-purple);
+      stroke-width: 4;
+      stroke-linejoin: round;
+      stroke-linecap: round;
+    }
+    
+    .coin-chart-dot {
+      fill: var(--brand-purple);
+    }
+    
+    .coin-chart-label {
+      fill: currentColor;
+      opacity: 0.65;
+      font-size: 13px;
+    }
+    
+    #coin-history-empty {
+      text-align: center;
+      margin: 1rem 0 0;
+    }
+
     @media (max-width: 420px) {
       .category-buttons {
         grid-template-columns: repeat(2, minmax(0, 1fr));
@@ -496,6 +565,31 @@
       Questions 🧠
     </a>
   </div>
+  
+    <section id="coin-history-card" class="coin-history-card" hidden>
+    <div class="coin-history-toggle" role="group" aria-label="Coin history view">
+      <button id="show-current-coins" class="active" type="button">
+        🪙 Current Coins
+      </button>
+      <button id="show-total-coins" type="button">
+        💰 Total Coins
+      </button>
+    </div>
+  
+    <div id="coin-chart-wrap" class="coin-chart-wrap">
+      <svg
+        id="coin-chart"
+        viewBox="0 0 600 220"
+        role="img"
+        aria-label="Coin history"
+      ></svg>
+    </div>
+  
+    <p id="coin-history-empty" class="muted" hidden>
+      Coin history will appear after your first scored forecast
+    </p>
+  </section>
+    
   <div id="restore-status" class="muted" aria-live="polite"></div>
 
   <!-- Floating top left settings gear -->
@@ -560,6 +654,200 @@
     const saveAccountBtn = document.getElementById("save-account");
     const accountStatus = document.getElementById("account-status");
     const closeAccountSettingsBtn = document.getElementById("close-account-settings");
+
+    const coinHistoryCard = document.getElementById("coin-history-card");
+    const coinChart = document.getElementById("coin-chart");
+    const coinHistoryEmpty = document.getElementById("coin-history-empty");
+    
+    const currentCoinsBtn = document.getElementById("show-current-coins");
+    const totalCoinsBtn = document.getElementById("show-total-coins");
+    
+    let coinHistoryRows = [];
+    let coinChartMode = "coins";
+    
+    function formatCoinDate(dateString) {
+      const date = new Date(`${dateString}T12:00:00`);
+    
+      return date.toLocaleDateString(undefined, {
+        month: "short",
+        day: "numeric",
+      });
+    }
+    
+    function renderCoinChart() {
+      if (!coinHistoryRows.length) {
+        coinChart.innerHTML = "";
+        coinChart.hidden = true;
+        coinHistoryEmpty.hidden = false;
+        return;
+      }
+    
+      coinChart.hidden = false;
+      coinHistoryEmpty.hidden = true;
+    
+      const width = 600;
+      const height = 220;
+    
+      const left = 55;
+      const right = 15;
+      const top = 15;
+      const bottom = 35;
+    
+      const chartWidth = width - left - right;
+      const chartHeight = height - top - bottom;
+    
+      const values = coinHistoryRows.map(row =>
+        Number(row[coinChartMode]) || 0
+      );
+    
+      const maxValue = Math.max(...values, 1);
+      const minValue = Math.min(...values, 0);
+    
+      const range = Math.max(maxValue - minValue, 1);
+      const padding = range * 0.12;
+    
+      const yMin = Math.max(0, minValue - padding);
+      const yMax = maxValue + padding;
+      const yRange = Math.max(yMax - yMin, 1);
+    
+      const xForIndex = index => {
+        if (coinHistoryRows.length === 1) {
+          return left + chartWidth / 2;
+        }
+    
+        return left + (index / (coinHistoryRows.length - 1)) * chartWidth;
+      };
+    
+      const yForValue = value =>
+        top + ((yMax - value) / yRange) * chartHeight;
+    
+      let path = "";
+    
+      values.forEach((value, index) => {
+        const x = xForIndex(index);
+        const y = yForValue(value);
+    
+        if (index === 0) {
+          path += `M ${x} ${y}`;
+          return;
+        }        
+        path += ` H ${x} V ${y}`;
+      });
+    
+      const gridValues = [
+        yMax,
+        yMin + yRange / 2,
+        yMin,
+      ];
+    
+      const grid = gridValues.map(value => {
+        const y = yForValue(value);
+    
+        return `
+          <line
+            class="coin-chart-grid"
+            x1="${left}"
+            y1="${y}"
+            x2="${width - right}"
+            y2="${y}"
+          />
+          <text
+            class="coin-chart-label"
+            x="${left - 8}"
+            y="${y + 4}"
+            text-anchor="end"
+          >
+            ${Math.round(value)}
+          </text>
+        `;
+      }).join("");
+    
+      const dots = values.map((value, index) => `
+        <circle
+          class="coin-chart-dot"
+          cx="${xForIndex(index)}"
+          cy="${yForValue(value)}"
+          r="4"
+        />
+      `).join("");
+    
+      const firstDate = formatCoinDate(coinHistoryRows[0].date);
+      const lastDate = formatCoinDate(
+        coinHistoryRows[coinHistoryRows.length - 1].date
+      );
+    
+      coinChart.innerHTML = `
+        ${grid}
+    
+        <path
+          class="coin-chart-line"
+          d="${path}"
+        />
+    
+        ${dots}
+    
+        <text
+          class="coin-chart-label"
+          x="${left}"
+          y="${height - 8}"
+          text-anchor="start"
+        >
+          ${firstDate}
+        </text>
+    
+        <text
+          class="coin-chart-label"
+          x="${width - right}"
+          y="${height - 8}"
+          text-anchor="end"
+        >
+          ${lastDate}
+        </text>
+      `;
+    }
+    
+    async function loadCoinHistory(user) {
+      if (!user?.id) {
+        coinHistoryCard.hidden = true;
+        return;
+      }
+    
+      coinHistoryCard.hidden = false;
+    
+      const { data, error } = await client
+        .from("coin_history")
+        .select("date,coins,total_coins")
+        .eq("user_id", user.id)
+        .order("date", { ascending: true });
+    
+      if (error) {
+        console.warn("Could not load coin history:", error.message || error);
+        coinChart.hidden = true;
+        coinHistoryEmpty.hidden = false;
+        return;
+      }
+    
+      coinHistoryRows = data || [];
+      renderCoinChart();
+    }
+    
+    currentCoinsBtn.addEventListener("click", () => {
+      coinChartMode = "coins";
+    
+      currentCoinsBtn.classList.add("active");
+      totalCoinsBtn.classList.remove("active");
+    
+      renderCoinChart();
+    });
+    
+    totalCoinsBtn.addEventListener("click", () => {
+      coinChartMode = "total_coins";
+    
+      totalCoinsBtn.classList.add("active");
+      currentCoinsBtn.classList.remove("active");
+    
+      renderCoinChart();
+    });
 
     let currentUser = null;
     let originalProfile = { username: "", email: "" };
@@ -702,6 +990,7 @@
         settingsBtn.style.display = "none";
         closeAccountSettingsModal();
       }
+      await loadCoinHistory(user);
     }
 
     async function handleRecoveryCallback() {
