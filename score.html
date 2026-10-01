@@ -2146,7 +2146,6 @@
       return false;
     }
   }
-
   const formatShareDate = (label) => String(label || "").trim().replace(/^([A-Za-z]{3,9})\s+(\d{1,2})$/, "$2 $1");
 
   function buildShare(scores = [], totalCoins = 0, totalAura = 0, currentStreak = 0, shareSummary = null) {
@@ -2202,15 +2201,15 @@
     const totalCount = toNumber(shareSummary?.totalCount, circlesByCity.length);
   
     const circles = circlesByCity.join(" ");
-    const dateLine = `${formatShareDate(ydayLabel)}    ${successCount}/${totalCount}`;
+    const dateLine = ` ${formatShareDate(ydayLabel)}    ${successCount}/${totalCount}`;
     const statsLine = `🪙 ${toNumber(totalCoins, 0)}  💗 ${formatSigned(totalAura)}  🌟 ${toNumber(currentStreak, 0)}`;
   
     const lines = [
-      { text: "Glean 🔮", isSpace: false, bias: 1 },  // +1 space
+      { text: " Glean 🔮", isSpace: false, bias: 1 },  // bias = # of spaces to left of text
       { text: "", isSpace: true },
       { text: dateLine, isSpace: false, bias: 1 },
       { text: "", isSpace: true },
-      { text: circles, isSpace: false, bias: 0 },
+      { text: circles, isSpace: false, bias: 1 },
       { text: "", isSpace: true },
       { text: statsLine, isSpace: false, bias: 0 },
     ];
@@ -2309,11 +2308,11 @@
     const currentStreak = Number(streakEl?.textContent) || 0;
   
     const lines = [
-      "Glean 🔮",
+      " Glean 🔮",
       "",
-      `${formatShareDate(dateLabelFromYMD(todayInPT))}    ${successCount}/3`,
+      ` ${formatShareDate(dateLabelFromYMD(todayInPT))}    ${successCount}/3`,
       "",
-      "⛽  ₿  🥇",
+      " ⛽  ₿  🥇",
       `${gasCircle} ${btcCircle} ${goldCircle}`,
       "",
       `🪙 ${totalCoins}  💗 ${formatSignedNumber(totalAura)}  🌟 ${currentStreak}`
