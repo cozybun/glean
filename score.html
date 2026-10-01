@@ -2308,7 +2308,7 @@
     const totalAura = Number(data.aura || 0);
     const currentStreak = Number(streakEl?.textContent) || 0;
   
-    const text = [
+    const lines = [
       "Glean 🔮",
       "",
       `${formatShareDate(dateLabelFromYMD(todayInPT))}    ${successCount}/3`,
@@ -2317,7 +2317,20 @@
       `${gasCircle} ${btcCircle} ${goldCircle}`,
       "",
       `🪙 ${totalCoins}  💗 ${formatSignedNumber(totalAura)}  🌟 ${currentStreak}`
-    ].join("\n");
+    ];
+
+    const maxLength = Math.max(...lines.map(line => Array.from(line).length));
+    const text = lines
+      .map(line => {
+        const length = Array.from(line).length;
+        const padding = Math.max(
+          0,
+          Math.floor((maxLength - length) / 2)
+        );
+
+        return " ".repeat(padding) + line;
+      })
+      .join("\n");
   
     shareBtn.onclick = async () => {
       const ok = await copyText(text);
