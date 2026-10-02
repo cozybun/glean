@@ -330,6 +330,9 @@
       box-sizing: border-box;
     }
 
+    #financeSaveBtn { margin-bottom: 0.8rem; }
+    #dailyScoreBtn { margin-top: 0.8rem; }
+
     #financeSaveBtn:hover {
       background: var(--dark-blue);
       border-color: var(--dark-blue);
@@ -476,20 +479,21 @@
       <!-- JS renders finance cards -->
     </div>
 
-    <div style="text-align:center; margin: 0;">
+    <div style="text-align:center; margin:0;">
       <button type="button" id="financeSaveBtn"> 💾 Save Forecasts </button>
     </div>
-  </form>
-  
-  <div id="status" style="text-align:center; margin-top:0.8rem; min-height:1.3rem;"></div>  
-  <div style="text-align:center; margin-top:0.8rem;">
-    <a
-      id="dailyScoreBtn"
-      href="score"
-      onclick="localStorage.setItem('scoreCategory','finance')">
-      🎯 View My Score
-    </a>
-  </div>
+    </form>
+    
+    <div id="status" style="text-align:center; min-height:1.3rem;"></div>
+    
+    <div style="text-align:center; margin:0;">
+      <a
+        id="dailyScoreBtn"
+        href="score"
+        onclick="localStorage.setItem('scoreCategory','finance')">
+        🎯 View My Score
+      </a>
+    </div>
 
   <script src="music.js"></script>
   <script type="module" src="finance.js"></script>
