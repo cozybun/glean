@@ -2313,35 +2313,35 @@
     const currentStreak = Number(streakEl?.textContent) || 0;
   
     const lines = [
-      "  Glean 🔮",
-      "",
-      `  ${formatShareDate(dateLabelFromYMD(todayInPT))}    ${successCount}/3`,
-      "",
-      " ⛽  ₿  🥇",
-      `${gasCircle} ${btcCircle} ${goldCircle}`,
-      "",
-      `🪙 ${totalCoins}  💗 ${formatSignedNumber(totalAura)}  🌟 ${currentStreak}`
+      { text: "Glean 🔮", bias: 2 },
+      { text: "", bias: 0 },
+      { text: `${formatShareDate(dateLabelFromYMD(todayInPT))}    ${successCount}/3`, bias: 2 },
+      { text: "", bias: 0 },
+      { text: "⛽  ₿  🥇", bias: 0 },
+      { text: `${gasCircle} ${btcCircle} ${goldCircle}`, bias: 0 },
+      { text: "", bias: 0 },
+      { text: `🪙 ${totalCoins}  💗 ${formatSignedNumber(totalAura)}  🌟 ${currentStreak}`, bias: 0 }
     ];
 
-    const maxLength = Math.max(...lines.map(line => Array.from(line).length));
+    const maxLength = Math.max(...lines.map(({ text }) => Array.from(text).length));
+    
     const text = lines
-      .map(line => {
+      .map(({ text: line, bias }) => {
         const length = Array.from(line).length;
+    
         const padding = Math.max(
           0,
-          Math.floor((maxLength - length) / 2)
+          Math.floor((maxLength - length) / 2) + bias
         );
-
+    
         return " ".repeat(padding) + line;
       })
       .join("\n");
   
     shareBtn.onclick = async () => {
-      const ok = await copyText(text);
-      showShareStatus(
-        ok ? "✅ Score copied!" : "⚠️ Clipboard blocked.",
-        ok ? "ok" : "error"
-      );
+      const ok = await copyText(centeredText);
+      showShareStatus(ok ? "✅ Score copied!" : "⚠️ Clipboard blocked here. Use text box below.", ok ? "ok" : "error");
+      if (!ok) showMonospaceFallback(centeredText);
     };
   }
 
