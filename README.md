@@ -2,4 +2,4 @@
 
 A cozy social forecasting game 😊
 
-Guess Stuff, Help Buns, Cozy Up 👯
+The World’s Toughest Game. Forecast Solo or with Friends 👯
