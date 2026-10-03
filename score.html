@@ -1310,8 +1310,13 @@
           ? "mid"
           : "good";
 
-    const messages = scoreMessages[tier];
-    const message = messages[Math.floor(Math.random() * messages.length)];
+    const messages = scoreMessages[tier];  // make random message permanent for same date
+    const messageKey = `score_msg_${category}_${dateLabel}`;
+    let message = localStorage.getItem(messageKey);    
+    if (!message || !messages.includes(message)) {
+      message = messages[Math.floor(Math.random() * messages.length)];
+      localStorage.setItem(messageKey, message);
+    }
     const toast = document.getElementById("scoreToast");
     const dateEl = document.getElementById("scoreToastDate");
     const circlesEl = document.getElementById("scoreToastCircles");
