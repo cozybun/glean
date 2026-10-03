@@ -2289,8 +2289,8 @@
     };
   
     shareBtn.onclick = async () => {
-      const ok = await copyText(centeredText);
-      showShareStatus(ok ? "✅ Score copied!" : "⚠️ Clipboard blocked here. Use text box below.", ok ? "ok" : "error");
+      const ok = await copyText(text);
+      showShareStatus(ok ? "✅ Score copied!" : "⚠️ Clipboard blocked here", ok ? "ok" : "error");
       if (!ok) showMonospaceFallback(centeredText);
     };
   }
@@ -2339,9 +2339,9 @@
       .join("\n");
   
     shareBtn.onclick = async () => {
-      const ok = await copyText(centeredText);
-      showShareStatus(ok ? "✅ Score copied!" : "⚠️ Clipboard blocked here. Use text box below.", ok ? "ok" : "error");
-      if (!ok) showMonospaceFallback(centeredText);
+      const ok = await copyText(text);
+      showShareStatus(ok ? "✅ Score copied!" : "⚠️ Clipboard blocked here", ok ? "ok" : "error");
+      if (!ok) showMonospaceFallback(text);
     };
   }
 
