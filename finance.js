@@ -511,13 +511,12 @@ async function handleSubmit(event) {
   
   if (Object.keys(values).length === 0) {
     setStatus(
-      "<span style='color:red;'> Enter at least one forecast before saving. </span>"
+      "<span style='color:red;'> Enter at least 1 forecast before saving. </span>"
     );
     return;
   }
 
 console.log("[FINANCE] starting save, about to ensure session");
-
 const session = await ensureSessionForDailySave();
 
 console.log("[FINANCE] ensureSessionForDailySave returned", session);
@@ -525,9 +524,8 @@ console.log("finance session", session);
 
 if (!session?.user?.id) {
   console.warn("finance save blocked: no session user id");
-
   setStatus(
-    "<span style='color:red;'> No active session yet. Your first daily temps save will create a guest session. </span>"
+    "<span style='color:red;'> Unable to create your guest session right now. Please try again. </span>"
   );
   return;
 }
