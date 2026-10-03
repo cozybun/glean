@@ -267,13 +267,18 @@
 
     #how-to-play {
       margin: 1rem auto 1rem;
-      padding: 0.55rem 1rem;
-      border: 2px solid var(--brand-purple);
-      border-radius: 10px;
-      background: #fff;
-      color: var(--brand-purple);
-      font-weight: 700;
+      background: var(--brand-purple);
+      color: #fff;
+      border: 1px solid var(--brand-purple);
+      border-radius: 8px;
+      font-weight: 600;
+      transition: all 0.2s ease;
       cursor: pointer;
+      padding: 0.6rem 1rem;
+      font-size: 1rem;
+      line-height: 1.1;
+      white-space: nowrap;
+      min-height: 2.2rem;
     }
 
     #questionsHelpModal .help-modal-dialog {
@@ -374,7 +379,7 @@
       <h1> My Questions </h1>
     
       <button id="how-to-play" type="button">
-        How To Play
+        How to Play
       </button>
     </div>
 
@@ -420,7 +425,7 @@
           </li>
         </ul>
     
-        <div style="text-align: center; margin-top: 0.9rem;">
+        <div style="text-align: center; margin-top: 1rem;">
           <button id="questionsHelpDoneBtn" type="button">
             Understood ✅
           </button>
