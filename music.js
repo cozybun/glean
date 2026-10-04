@@ -50,10 +50,14 @@
   let trackIndex = Number.isInteger(saved.trackIndex) ? saved.trackIndex : 0;
   const savedTrackIndex = Number.isInteger(saved.trackIndex) ? saved.trackIndex : 0;
   const savedTime = Number.isFinite(saved.time) ? saved.time : 0;
-
-  const fallbackStep = 1;  // default 33% volume
-  // use saved step if valid, otherwise fall back to default
-  let volumeStep = (Number.isInteger(saved.volumeStep) && saved.volumeStep >= 0 && saved.volumeStep < VOLUME_STEPS.length) ? saved.volumeStep : fallbackStep;
+  const savedSessionVolume = Number(sessionStorage.getItem("glean-music-volume"));
+  
+  let volumeStep =  // muted if no session preference
+    Number.isInteger(savedSessionVolume) &&
+    savedSessionVolume >= 0 &&
+    savedSessionVolume < VOLUME_STEPS.length
+      ? savedSessionVolume
+      : 0;
 
   let hasUserGesture = false;
   let isApplyingSavedTime = true;
@@ -104,14 +108,14 @@
   };
 
   const isMusicEnabled = () => volumeStep > 0;
-
   const saveState = () => {
     try {
+      sessionStorage.setItem("glean-music-volume", String(volumeStep));
+  
       localStorage.setItem(
         MUSIC_KEY,
         JSON.stringify({
           trackIndex,
-          volumeStep,
           time: Number.isFinite(audio.currentTime) ? audio.currentTime : 0
         })
       );
