@@ -322,16 +322,7 @@ button:disabled {
   opacity: 1;
 }
 
-.daily-page-header {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  gap: 1.3rem;
-  margin: 1rem 0;
-  text-align: center;
-}
 
-.daily-page-header h1 { margin: 0; }
 
 /* Help modal hidden state */
 .help-modal {
@@ -444,7 +435,9 @@ button:disabled {
 .daily-page-header,
 #dailyPageHeader,
 .hourly-page-header,
-#hourlyPageHeader {
+#hourlyPageHeader,
+.finance-page-header,
+.questions-page-header {
   display: flex;
   flex-direction: column;
   align-items: center;
@@ -453,7 +446,10 @@ button:disabled {
   margin: 0.6rem 0 0.8rem;  /* control space after header */
 }
 
-.daily-page-header h1, #dailyPageHeader h1, .hourly-page-header h1, #hourlyPageHeader h1 { margin: 0; }
+.daily-page-header h1, #dailyPageHeader h1, .hourly-page-header h1, #hourlyPageHeader h1, .finance-page-header h1, .questions-page-header h1 {
+  margin: 0;
+  font-size: 2.3rem;
+}
 
 /* Daily form: reduce space above date selector */
 #tempsForm,
