@@ -1036,6 +1036,26 @@
       originalProfile = { username, email };
     }
 
+    async function checkRivalsUnlock(user) {
+      if (!user?.id) return;
+    
+      const { data, error } = await client
+        .from("user_stats")
+        .select("current_streak,total_coins")
+        .eq("user_id", user.id)
+        .maybeSingle();
+    
+      if (error) {
+        console.warn("Could not check rivals unlock:", error.message);
+        return;
+      }
+    
+      if (!data) return;
+      const unlocked = Number(data.current_streak) >= 5 || Number(data.total_coins) >= 1000;    
+      if (!unlocked) return;    
+      console.log("🐍🐺 Rivals unlocked!", data);
+    }
+
     async function syncAuthStateUI() {
       const user = await getCurrentSessionUser();
       currentUser = user;
@@ -1054,6 +1074,7 @@
         closeAccountSettingsModal();
       }
       await loadCoinHistory(user);
+      await checkRivalsUnlock(user);
     }
 
     async function handleRecoveryCallback() {
