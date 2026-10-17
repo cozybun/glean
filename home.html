@@ -466,6 +466,65 @@
       margin: 1rem 0 0;
     }
 
+    #rivals-toast:not([hidden]) {
+      position: fixed;
+      bottom: 24px;
+      left: 50%;
+      transform: translateX(-50%);
+      z-index: 10002;
+      width: min(92vw, 390px);
+      padding: 24px;
+      border-radius: 20px;
+      background: #fff9f0;
+      border: 2px solid #d9b7f5;
+      box-shadow: 0 12px 40px rgba(70, 40, 90, 0.22);
+      text-align: center;
+      animation: rivalsToastPop 0.3s ease-out;
+    }
+    
+    #rivals-toast[hidden] {
+      display: none;
+    }
+    
+    .rivals-toast-characters {
+      font-size: 2.8rem;
+      margin-bottom: 8px;
+    }
+    
+    #rivals-toast h3 {
+      margin: 8px 0;
+      font-size: 1.4rem;
+    }
+    
+    #rivals-toast p {
+      line-height: 1.5;
+    }
+    
+    #rivals-toast-close {
+      position: absolute;
+      top: 8px;
+      right: 12px;
+      border: 0;
+      background: transparent;
+      font-size: 1.5rem;
+      cursor: pointer;
+    }
+    
+    #rivals-toast-got-it {
+      background: var(--brand-purple);
+      color: white;
+      border: 0;
+      border-radius: 12px;
+      padding: 12px 24px;
+      font-weight: 700;
+      cursor: pointer;
+    }
+    
+    @keyframes rivalsToastPop {
+      from { opacity: 0; transform: translate(-50%, 20px); }
+      to { opacity: 1; transform: translate(-50%, 0); }
+    }
+
     @media (max-width: 420px) {
       .category-buttons {
         grid-template-columns: repeat(2, minmax(0, 1fr));
@@ -629,6 +688,21 @@
     </div>
   </div>
 
+  <div id="rivals-toast" role="dialog" aria-label="Meet your rivals" hidden>
+    <button id="rivals-toast-close" type="button" aria-label="Close">×</button>
+  
+    <div class="rivals-toast-characters">🐍 🐺</div>
+    <h3> You've got company! </h3>
+  
+    <p>
+      Meet Snake and Wolf, your new AI rivals!
+      We'll make our own daily forecasts, just like you.
+    </p>
+  
+    <p> Think you can forecast better than us? </p>
+  
+    <button id="rivals-toast-got-it" type="button"> Let's play! </button>
+  </div>
   <script src="music.js"></script>
 
   <script>
@@ -1053,7 +1127,19 @@
       if (!data) return;
       const unlocked = Number(data.current_streak) >= 5 || Number(data.total_coins) >= 1000;    
       if (!unlocked) return;    
-      console.log("🐍🐺 Rivals unlocked!", data);
+      const storageKey = `glean_rivals_intro_seen_${user.id}`;
+      if (localStorage.getItem(storageKey) === "true") return;
+      
+      const toast = document.getElementById("rivals-toast");
+      toast.hidden = false;
+      
+      function dismissToast() {
+        toast.hidden = true;
+        localStorage.setItem(storageKey, "true");
+      }
+      
+      document.getElementById("rivals-toast-close").onclick = dismissToast;
+      document.getElementById("rivals-toast-got-it").onclick = dismissToast;
     }
 
     async function syncAuthStateUI() {
