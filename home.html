@@ -1115,7 +1115,7 @@
     
       const { data, error } = await client
         .from("user_stats")
-        .select("current_streak,total_coins")
+        .select("current_streak,total_coins,rivals_intro_seen")
         .eq("user_id", user.id)
         .maybeSingle();
     
@@ -1125,19 +1125,46 @@
       }
     
       if (!data) return;
-      const unlocked = Number(data.current_streak) >= 5 || Number(data.total_coins) >= 1000;    
-      if (!unlocked) return;    
-      const storageKey = `glean_rivals_intro_seen_${user.id}`;
-      if (localStorage.getItem(storageKey) === "true") return;
-      
-      const toast = document.getElementById("rivals-toast");
-      toast.hidden = false;
-      
-      function dismissToast() {
-        toast.hidden = true;
-        localStorage.setItem(storageKey, "true");
+      if (data.rivals_intro_seen) return;  // already dismissed on any device
+      const storageKey = `glean_rivals_intro_seen_${user.id}`;  // migrate the old browser-only flag
+    
+      if (localStorage.getItem(storageKey) === "true") {
+        const { error: migrationError } = await client
+          .from("user_stats")
+          .update({ rivals_intro_seen: true })
+          .eq("user_id", user.id);
+    
+        if (migrationError) {
+          console.warn("Could not migrate rivals intro:", migrationError.message);
+        }
+        return;
       }
-      
+    
+      // unlock at 5 current streak days or 1,000 lifetime coins
+      const unlocked =
+        Number(data.current_streak) >= 5 ||
+        Number(data.total_coins) >= 1000;
+    
+      if (!unlocked) return;
+      const toast = document.getElementById("rivals-toast");
+      if (!toast) return;    
+      toast.hidden = false;
+    
+      async function dismissToast() {
+        toast.hidden = true;
+    
+        const { error: saveError } = await client
+          .from("user_stats")
+          .update({ rivals_intro_seen: true })
+          .eq("user_id", user.id);
+    
+        if (saveError) {
+          console.warn("Could not save rivals intro dismissal:", saveError.message);
+        } else {
+          localStorage.setItem(storageKey, "true");
+        }
+      }
+    
       document.getElementById("rivals-toast-close").onclick = dismissToast;
       document.getElementById("rivals-toast-got-it").onclick = dismissToast;
     }
