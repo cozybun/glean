@@ -1198,6 +1198,9 @@ function getDailyCutoffHour(timeZone, date = new Date()) {
   return tzName.endsWith("DT") ? 12 : 11;
 }
 
+const dailyCutoffLabel = document.getElementById("dailyCutoffLabel");
+if (dailyCutoffLabel) { dailyCutoffLabel.textContent = getDailyCutoffHour(TIMEZONE_PT) === 12 ? "noon" : "11 AM"; }
+
 // Determine PT autoswitch for date selector default
 function shouldAutoUseTomorrowPT() {
   const hour = Number(
