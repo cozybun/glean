@@ -747,13 +747,10 @@
          aria-label="Daily rivals results" hidden>
     
       <div class="rivals-toast-characters"> 🐍 🐺 </div>    
-      <h3> Latest Rival Results </h3>
+      <h3> Latest Rivals Results </h3>
     
-      <p id="rivals-daily-results"> Your rival results: </p>
-    
-      <button id="rivals-daily-continue" type="button">
-        Continue 💜
-      </button>
+      <div id="rivals-daily-results"> Your rivals results: </div>
+      <button id="rivals-daily-continue" type="button"> Continue ✅ </button>
     </div>
   <script src="music.js"></script>
 
@@ -1313,6 +1310,26 @@
           { name: "🐍 Snake", id: snakeId, qs: null },
           { name: "🐺 Wolf", id: wolfId, qs: null }
         ];
+
+        const myTotal =
+          (temps[user.id] || 0) +
+          (finance[user.id] || 0) +
+          questions;
+        
+        const snakeTotal =
+          (temps[snakeId] || 0) +
+          (finance[snakeId] || 0);
+        
+        const wolfTotal =
+          (temps[wolfId] || 0) +
+          (finance[wolfId] || 0);
+        
+        const outcome =
+          myTotal > snakeTotal && myTotal > wolfTotal
+            ? "win"
+            : myTotal < snakeTotal && myTotal < wolfTotal
+              ? "loss"
+              : "neutral";
         
         const rows = players.map(player => {
           const t = temps[player.id] || 0;
@@ -1329,7 +1346,83 @@
             </tr>
           `;
         }).join("");
+
+        const outcomeMessages = {
+          win: {
+            icon: "🏆",
+            title: "Victory! You won over both rivals! :D",
+            color: "var(--brand-green)",
+            background: "#f0fdf4"
+          },
+          neutral: {
+            icon: "⚖️",
+            title: "Mixed result! You won over or tied with 1 rival, lost to or tied with 1 rival :)",
+            color: "var(--brand-purple)",
+            background: "#f5f3ff"
+          },
+          loss: {
+            icon: "📉",
+            title: "Defeat! You lost to both rivals! :/",
+            color: "var(--brand-red)",
+            background: "#fef2f2"
+          }
+        };
         
+        const result = outcomeMessages[outcome];
+        const rivalsBanter = {
+          win: [
+            "🐍🐺: Okay, good job. Beginner's luck.",
+            "🐍🐺: Congrats. But we request a rematch.",
+            "🐍🐺: Our calculations were... temporarily confused.",
+            "🐍🐺: You won this round. Don't get complacent.",
+            "🐍🐺: We were merely testing your confidence.",
+            "🐍🐺: Well even the moon has bad days.",
+            "🐍🐺: Maybe that scoreboard is off.",
+            "🐍🐺: Going to pretend we didn't see that.",
+            "🐍🐺: Enjoy your little victory, human.",
+            "🐍🐺: Fine. You earned 1 howl of respect.",
+            "🐍🐺: Someone's feeling mighty clever today.",
+            "🐍🐺: We'll be back with better forecasts."
+          ],
+          neutral: [
+            "🐍🐺: Interesting. Neither victory nor defeat.",
+            "🐍🐺: We're circling each other now.",
+            "🐍🐺: A draw? How delightfully neutral.",
+            "🐍🐺: This rivalry is getting interesting.",
+            "🐍🐺: We'll allow this... for now.",
+            "🐍🐺: Nobody gets bragging rights today.",
+            "🐍🐺: One small coin could change everything.",
+            "🐍🐺: The pack remains undecided.",
+            "🐍🐺: Hmm, we expected a clearer result.",
+            "🐍🐺: No worries, tomorrow will settle this.",
+            "🐍🐺: We're remarkably well matched.",
+            "🐍🐺: The scoreboard is keeping its secrets."
+          ],
+          loss: [
+            "🐍🐺: Sssso close. Well, not really.",
+            "🐍🐺: Yay. The pack wins today!",
+            "🐍🐺: Better luck with tomorrow's forecasts.",
+            "🐍🐺: We can almost taste those bragging rights.",
+            "🐍🐺: Perhaps consult a crystal ball next time.",
+            "🐍🐺: Don't worry. We left you some crumbs.",
+            "🐍🐺: Two rivals, zero mercy.",
+            "🐍🐺: The scoreboard speaks for itself.",
+            "🐍🐺: Our predictions have been vindicated.",
+            "🐍🐺: You can challenge the pack again tomorrow.",
+            "🐍🐺: We do love a predictable ending.",
+            "🐍🐺: Shake it off. Tomorrow's another hunt."
+          ]
+        };
+        
+        const lines = rivalsBanter[outcome];
+        const banterKey = `glean_rivals_banter_${user.id}_${scoredDate}`;        
+        let localBanter = localStorage.getItem(banterKey);
+        
+        if (!localBanter) {
+          localBanter = lines[Math.floor(Math.random() * lines.length)];
+          localStorage.setItem(banterKey, localBanter);
+        }
+      
         document.getElementById("rivals-daily-results").innerHTML = `
           <table style="width:100%; font-size:0.8rem; text-align:center; border-spacing:4px 10px;">
             <thead>
@@ -1343,6 +1436,30 @@
             </thead>
             <tbody>${rows}</tbody>
           </table>
+    
+          <div style="
+            margin-top: 12px;
+            padding: 12px;
+            border-radius: 12px;
+            background: ${result.background};
+            color: ${result.color};
+            font-weight: 700;
+            text-align: center;
+          ">
+            <div style="font-size: 1.8rem;">${result.icon}</div>
+            <div>${result.title}</div>
+          </div>
+        
+          <p style="
+            margin: 14px 0 4px;
+            font-size: 0.9rem;
+            font-style: italic;
+            line-height: 1.5;
+            color: #555;
+            text-align: center;
+          ">
+            ${localBanter}
+          </p>
         `;
         
         const toast = document.getElementById("rivals-daily-toast");
