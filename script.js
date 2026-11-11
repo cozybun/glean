@@ -26,8 +26,10 @@ let lazyPendingContinuation = null;
 let lazyPendingForecastDate = null;
 let lazyUsed = false;
 
-const HOURLY_LABELS = [ "11 AM", "5 PM" ];  // [ "10 AM", "4 PM" ]
-const HOURLY_GAME_SWITCH_HOUR = 17;  // 16
+const HOURLY_LABELS = getDailyCutoffHour(TIMEZONE_PT) === 12
+    ? ["11 AM", "5 PM"]
+    : ["10 AM", "4 PM"];
+const HOURLY_GAME_SWITCH_HOUR = getDailyCutoffHour(TIMEZONE_PT) === 12 ? 17 : 16;
 const STATIONS = { "Los Angeles": "LAX", "Houston": "HOU", "New York City": "NYC", };
 const CITY_STREAK_THRESHOLD = Object.keys(STATIONS).length;  // get number of cities for streak threshold
 const CITY_EMOJIS = {
@@ -1801,7 +1803,7 @@ async function buildHourlyGrid() {
   const selectedForecastDate = hourlyState.gameDate;
 
   const hourNum = convertHourLabel(selectedHour);
-  const showSixHrHigh = hourNum === 14 || hourNum === 20;
+  const showSixHrHigh = Number.isFinite(hourNum);
   const sixHrHourNum = showSixHrHigh ? hourNum + 0.5 : null;
 
   grid.innerHTML = "";
@@ -1877,8 +1879,16 @@ async function buildHourlyGrid() {
 }
 
 function convertHourLabel(label) {
-  if (label === "11 AM") return 14;
-  if (label === "5 PM") return 20;
+  const isDST = getDailyCutoffHour(TIMEZONE_PT) === 12;
+
+  if (label === "11 AM" || label === "10 AM") {
+    return isDST ? 14 : 13;
+  }
+
+  if (label === "5 PM" || label === "4 PM") {
+    return isDST ? 20 : 19;
+  }
+
   return NaN;
 }
 
@@ -2242,7 +2252,7 @@ async function handleHourlySubmit(e) {
   const useTomorrow = hourlyState.useTomorrow;
   const selectedForecastDate = hourlyState.gameDate;
   const selectedHourNum = convertHourLabel(selectedHour);
-  const showSixHrHigh = selectedHourNum === 14 || selectedHourNum === 20;
+  const showSixHrHigh = Number.isFinite(selectedHourNum);
   const selectedCutoff = getHourlyCutoff(etNow, selectedHourNum);
   const sixHrHourNum = showSixHrHigh ? selectedHourNum + 0.5 : null;
 
@@ -2675,7 +2685,8 @@ document.addEventListener('DOMContentLoaded', async () => {  // main init
     const d = Number(etParts.day);
   
     const offsetMin = getETOffsetMinutes();
-    let target = Date.UTC(y, mo, d, 20, 0, 0) - offsetMin * 60 * 1000;  // 20 ET
+    const rolloverHourET = getDailyCutoffHour(TIMEZONE_PT) === 12 ? 20 : 19;
+    let target = Date.UTC(y, mo, d, rolloverHourET, 0, 0) - offsetMin * 60 * 1000;
     const now = Date.now();
   
     if (target <= now) target += 24 * 60 * 60 * 1000;  // next day
