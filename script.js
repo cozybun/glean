@@ -1187,7 +1187,18 @@ function addDaysYmd(ymd, delta = 0) {
   return utc.toISOString().slice(0, 10);
 }
 
-// Determine noon PT autoswitch for date selector default
+// Return 11 during standard time and 12 during daylight time
+function getDailyCutoffHour(timeZone, date = new Date()) {
+  const tzName = new Intl.DateTimeFormat("en-US", {
+    timeZone,
+    timeZoneName: "short",
+  }).formatToParts(date)
+    .find((p) => p.type === "timeZoneName")?.value || "";
+
+  return tzName.endsWith("DT") ? 12 : 11;
+}
+
+// Determine PT autoswitch for date selector default
 function shouldAutoUseTomorrowPT() {
   const hour = Number(
     new Intl.DateTimeFormat("en-US", {
@@ -1198,7 +1209,7 @@ function shouldAutoUseTomorrowPT() {
       .formatToParts(new Date())
       .find((p) => p.type === "hour").value
   );
-  return hour >= 12;
+  return hour >= getDailyCutoffHour(TIMEZONE_PT);
 }
 
 function getDailyForecastDateISO(dayChoice = "today") {
@@ -1506,7 +1517,6 @@ async function buildDailyGrid() {
   if (!grid || !forecastDaySelect) return;
 
   updateCurrentDate();
-
   grid.textContent = "Loading cities...";
   const forecastDay = forecastDaySelect.value || "today";
   const forecastDate = getDailyForecastDateISO(forecastDay);
@@ -1514,7 +1524,6 @@ async function buildDailyGrid() {
 
   let actuals = [];
   let guesses = [];
-
   const cityYesterdayById = new Map();
 
   if (showYesterday) {
@@ -1591,7 +1600,7 @@ async function buildDailyGrid() {
 
   const PTNow = getPTNow();
   const PTCutoff = new Date(PTNow);
-  PTCutoff.setUTCHours(12, 0, 0, 0);
+  PTCutoff.setUTCHours(getDailyCutoffHour(TIMEZONE_PT), 0, 0, 0);
 
   const formatYesterdayValue = (v) =>
     v === undefined || v === null ? null : `${v}°`;
@@ -1634,7 +1643,7 @@ async function buildDailyGrid() {
       prevGuess &&
       (prevGuess.high !== undefined || prevGuess.low !== undefined);
 
-    const localNow = getTzDate(cityTz);
+    const localNow = new Date();
     const parts = new Intl.DateTimeFormat("en-US", {  // compute current date & hour in city
       timeZone: cityTz,
       year: "numeric",
@@ -1650,8 +1659,13 @@ async function buildDailyGrid() {
     const cityDate = `${parts.year}-${parts.month}-${parts.day}`;
     const cityHour = Number(parts.hour);
 
-    const isPastCutoff = forecastDay === "today" &&  // lock all cities for today when past PT noon
-      (PTNow >= PTCutoff || forecastDate < cityDate || (forecastDate === cityDate && cityHour >= 12));  // lock city if selected date is earlier than current date
+    const isPastCutoff = forecastDay === "today" &&  // lock all cities for today when past PT cutoff
+      (
+        PTNow >= PTCutoff ||
+        forecastDate < cityDate ||
+        (forecastDate === cityDate &&
+          cityHour >= getDailyCutoffHour(cityTz))  // lock city if selected date is earlier than current date
+      );
     const forecastText = cityHasSavedForecast
       ? `My current forecast: H ${formatForecastValue(prevGuess.high)} / L ${formatForecastValue(prevGuess.low)}`
       : "Awaiting my forecast";
@@ -1703,7 +1717,9 @@ async function buildDailyGrid() {
           </label>
 
           ${isPastCutoff
-            ? '<small style="color:#e74c3c; display:block; margin-top:0.5rem;"> Past cutoff (noon local) </small>'
+            ? `<small style="color:#e74c3c; display:block; margin-top:0.5rem;">
+                 Past cutoff (${getDailyCutoffHour(cityTz) === 11 ? "11 AM" : "noon"} local)
+               </small>`
             : ""}
         </div>
       `;
@@ -1999,7 +2015,7 @@ async function handleDailySubmit(e) {
     if (forecastDay === "today") {
       const localNow = getTzDate(city.timezone || "UTC");
       const cutoff = new Date(localNow.getTime());
-      cutoff.setUTCHours(12, 0, 0, 0);
+      cutoff.setUTCHours(getDailyCutoffHour(city.timezone || "UTC"), 0, 0, 0);
       if (localNow >= cutoff) {
         isLocked = true;
       }
