@@ -519,6 +519,45 @@
       font-weight: 700;
       cursor: pointer;
     }
+
+    #rivals-daily-toast:not([hidden]) {
+      position: fixed;
+      bottom: 24px;
+      left: 50%;
+      transform: translateX(-50%);
+      z-index: 10002;
+      width: min(92vw, 390px);
+      padding: 24px;
+      border-radius: 20px;
+      background: #fff9f0;
+      border: 2px solid #d9b7f5;
+      box-shadow: 0 12px 40px rgba(70, 40, 90, 0.22);
+      text-align: center;
+      animation: rivalsToastPop 0.3s ease-out;
+    }
+    
+    #rivals-daily-toast[hidden] {
+      display: none;
+    }
+    
+    #rivals-daily-toast h3 {
+      margin: 8px 0;
+      font-size: 1.4rem;
+    }
+    
+    #rivals-daily-toast p {
+      line-height: 1.5;
+    }
+    
+    #rivals-daily-continue {
+      background: var(--brand-purple);
+      color: white;
+      border: 0;
+      border-radius: 12px;
+      padding: 12px 24px;
+      font-weight: 700;
+      cursor: pointer;
+    }
     
     @keyframes rivalsToastPop {
       from { opacity: 0; transform: translate(-50%, 20px); }
@@ -661,7 +700,7 @@
     ⚙️
   </button>
 
-  <!-- Account settings popup -->
+  <!-- Account settings toast -->
   <div id="account-backdrop" aria-live="polite">
     <div id="account-panel" class="account-wrap" role="dialog" aria-modal="true" aria-labelledby="account-title">
       <h3 id="account-title"> Account Settings </h3>
@@ -695,14 +734,27 @@
     <h3> Meet your rivals! </h3>
   
     <p>
-      Hey I'm Snake, and I'm Wolf. We're your new AI rivals!
-      We'll make our own forecasts every day, just like you.
+      Hey I'm Snake, and I'm Wolf. We're your rivals now. Welcome to the next level!
+      We'll make our own forecasts every day, just like you. Then compare our daily scores.
     </p>
   
     <p> Think you can forecast better than us? 😤 </p>
   
     <button id="rivals-toast-got-it" type="button"> Let's play! </button>
   </div>
+    <!-- Daily rivals results toast -->
+    <div id="rivals-daily-toast" role="dialog"
+         aria-label="Daily rivals results" hidden>
+    
+      <div class="rivals-toast-characters"> 🐍 🐺 </div>    
+      <h3> Latest Rival Results </h3>
+    
+      <p id="rivals-daily-results"> Your rival results: </p>
+    
+      <button id="rivals-daily-continue" type="button">
+        Continue 💜
+      </button>
+    </div>
   <script src="music.js"></script>
 
   <script>
@@ -986,6 +1038,18 @@
       renderCoinChart();
     });
 
+    // Close daily rivals toast and remember it for this user & date
+    document.getElementById("rivals-daily-continue")
+      .addEventListener("click", () => {
+        const toast = document.getElementById("rivals-daily-toast");
+        const storageKey = toast.dataset.storageKey;
+    
+        if (storageKey) {
+          localStorage.setItem(storageKey, "true");
+        }
+    
+        toast.hidden = true;
+      });
     let currentUser = null;
     let originalProfile = { username: "", email: "" };
 
@@ -1110,6 +1174,182 @@
       originalProfile = { username, email };
     }
 
+    async function isRivalsScoringDone() { 
+      const parts = new Intl.DateTimeFormat("en-US", {
+        timeZone: "America/Los_Angeles",
+        year: "numeric",
+        month: "numeric",
+        day: "numeric"
+      }).formatToParts(new Date());
+      
+      const getPart = type => Number(parts.find(part => part.type === type).value);    
+      const year = getPart("year");
+      const month = getPart("month");
+      const day = getPart("day");   
+      const yesterday = new Date(Date.UTC(year, month - 1, day - 1))
+        .toISOString()
+        .slice(0, 10);
+    
+      const { data, error } = await client
+        .from("questions_actuals")
+        .select("date")
+        .eq("date", yesterday)
+        .maybeSingle();
+    
+      if (error) {
+        console.warn("Could not check rivals scoring:", error.message);
+        return null;
+      }
+    
+      return data ? yesterday : null;
+    }
+
+    async function loadDailyRivalsTemps(userId, scoredDate) {
+      const snakeId = "00000000-0000-0000-0000-000000000001";
+      const wolfId = "00000000-0000-0000-0000-000000000002";
+    
+      const { data, error } = await client
+        .from("daily_scores")
+        .select("user_id,coins")
+        .eq("date", scoredDate)
+        .in("user_id", [userId, snakeId, wolfId]);
+    
+      if (error) {
+        console.warn("Could not load rivals Temps:", error.message);
+        return null;
+      }
+    
+      const totals = {
+        [userId]: 0,
+        [snakeId]: 0,
+        [wolfId]: 0
+      };
+    
+      for (const row of data || []) {
+        totals[row.user_id] += Number(row.coins) || 0;
+      }
+    
+      return totals;
+    }
+
+    async function loadDailyRivalsFinance(userId, scoredDate) {
+      const snakeId = "00000000-0000-0000-0000-000000000001";
+      const wolfId = "00000000-0000-0000-0000-000000000002";
+    
+      const { data, error } = await client
+        .from("finance_scores")
+        .select("user_id,coins")
+        .eq("date", scoredDate)
+        .in("user_id", [userId, snakeId, wolfId]);
+    
+      if (error) {
+        console.warn("Could not load rivals Finance:", error.message);
+        return null;
+      }
+    
+      const totals = {
+        [userId]: 0,
+        [snakeId]: 0,
+        [wolfId]: 0
+      };
+    
+      for (const row of data || []) {
+        totals[row.user_id] += Number(row.coins) || 0;
+      }
+    
+      return totals;
+    }
+
+    async function loadDailyRivalsQs(userId, scoredDate) {
+      const { data, error } = await client
+        .from("questions_scores")
+        .select("total_coins")
+        .eq("user_id", userId)
+        .eq("date", scoredDate)
+        .maybeSingle();
+    
+      if (error) {
+        console.warn("Could not load Questions results:", error.message);
+        return null;
+      }
+    
+      return Number(data?.total_coins) || 0;
+    }
+
+    async function checkDailyRivalsResults(user) {
+      if (!user?.id) return;
+    
+      const { data: stats, error } = await client  // only show daily results after rivals have met
+        .from("user_stats")
+        .select("met_rivals")
+        .eq("user_id", user.id)
+        .maybeSingle();
+    
+      if (error || !stats?.met_rivals) return;    
+      const scoredDate = await isRivalsScoringDone();
+      if (!scoredDate) return;
+    
+      const storageKey = `glean_rivals_daily_${user.id}_${scoredDate}`;  // remember each user's last viewed results on this browser    
+      if (localStorage.getItem(storageKey) === "true") return;
+        const [temps, finance, questions] = await Promise.all([
+          loadDailyRivalsTemps(user.id, scoredDate),
+          loadDailyRivalsFinance(user.id, scoredDate),
+          loadDailyRivalsQs(user.id, scoredDate)
+        ]);
+      
+        if (temps === null || finance === null || questions === null) {  // skip incomplete results if a database query fails
+          return;
+        }
+        const snakeId = "00000000-0000-0000-0000-000000000001";
+        const wolfId = "00000000-0000-0000-0000-000000000002";
+        
+        const fmt = value => {
+          const n = Number(value) || 0;
+          return `${n > 0 ? "+" : ""}${n.toLocaleString()}`;
+        };
+        
+        const players = [
+          { name: "💜 Me", id: user.id, qs: questions },
+          { name: "🐍 Snake", id: snakeId, qs: null },
+          { name: "🐺 Wolf", id: wolfId, qs: null }
+        ];
+        
+        const rows = players.map(player => {
+          const t = temps[player.id] || 0;
+          const f = finance[player.id] || 0;
+          const total = t + f + (player.qs || 0);
+        
+          return `
+            <tr>
+              <th scope="row">${player.name}</th>
+              <td>${fmt(t)}</td>
+              <td>${fmt(f)}</td>
+              <td>${player.qs === null ? "—" : fmt(player.qs)}</td>
+              <td><strong>${fmt(total)}</strong></td>
+            </tr>
+          `;
+        }).join("");
+        
+        document.getElementById("rivals-daily-results").innerHTML = `
+          <table style="width:100%; font-size:0.8rem; text-align:center; border-spacing:4px 10px;">
+            <thead>
+              <tr>
+                <th></th>
+                <th>🌞<br> Temps </th>
+                <th>📈<br> Finance </th>
+                <th>🧠<br> Questions </th>
+                <th>🪙<br> Total </th>
+              </tr>
+            </thead>
+            <tbody>${rows}</tbody>
+          </table>
+        `;
+        
+        const toast = document.getElementById("rivals-daily-toast");
+        toast.dataset.storageKey = storageKey;
+        toast.hidden = false;
+    }
+
     async function checkRivalsUnlock(user) {
       if (!user?.id) return;
     
@@ -1188,6 +1428,7 @@
       }
       await loadCoinHistory(user);
       await checkRivalsUnlock(user);
+      await checkDailyRivalsResults(user);
     }
 
     async function handleRecoveryCallback() {
