@@ -26,6 +26,11 @@ let lazyPendingContinuation = null;
 let lazyPendingForecastDate = null;
 let lazyUsed = false;
 
+// Time helpers
+const TIMEZONE_ET = "America/New_York";
+const TIMEZONE_PT = "America/Los_Angeles";
+const MONTH_ABBR = ["Jan", "Feb", "Mar", "Apr", "May", "June", "July", "Aug", "Sept", "Oct", "Nov", "Dec"];
+let lastPTDateForUi = getPTTodayYmd();
 const HOURLY_LABELS = getDailyCutoffHour(TIMEZONE_PT) === 12
     ? ["11 AM", "5 PM"]
     : ["10 AM", "4 PM"];
@@ -1112,12 +1117,6 @@ async function markBackupEmailPrompt() {
   }
   return nowIso;
 }
-
-// Time helpers
-const TIMEZONE_ET = "America/New_York";
-const TIMEZONE_PT = "America/Los_Angeles";
-const MONTH_ABBR = ["Jan", "Feb", "Mar", "Apr", "May", "June", "July", "Aug", "Sept", "Oct", "Nov", "Dec"];
-let lastPTDateForUi = getPTTodayYmd();
 
 // Helper to auto switch date selector to tomorrow after last city cutoff time
 function applyNoonAutoSelect() {
