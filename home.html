@@ -520,7 +520,7 @@
       cursor: pointer;
     }
 
-    #rivals-daily-toast:not([hidden]) {
+    #rivals-daily-toast:not([hidden]), #rivals-wager-toast:not([hidden]) {
       position: fixed;
       bottom: 24px;
       left: 50%;
@@ -536,20 +536,38 @@
       animation: rivalsToastPop 0.3s ease-out;
     }
     
-    #rivals-daily-toast[hidden] {
-      display: none;
+    #rivals-daily-toast[hidden], #rivals-wager-toast[hidden] {
+      display: none !important;
     }
     
-    #rivals-daily-toast h3 {
+    #rivals-daily-toast h3, #rivals-wager-toast h3 {
       margin: 8px 0;
-      font-size: 1.4rem;
+      font-size: 1.5rem;
+    }
+    #rivals-daily-toast p, #rivals-wager-toast p { line-height: 1.5; }
+
+    .rivals-wager-actions {
+      display: flex;
+      gap: 10px;
+      margin-top: 12px;
+    }    
+    .rivals-wager-actions button { flex: 1; }
+
+    #rivals-wager-amount {
+      width: 100%;
+      box-sizing: border-box;
+      padding: 10px 12px;
+      margin: 8px 0 12px;
+      border: 2px solid #d9b7f5;
+      border-radius: 10px;
+      background: #fff;
+      font: inherit;
+      text-align: center;
     }
     
-    #rivals-daily-toast p {
-      line-height: 1.5;
-    }
-    
-    #rivals-daily-continue {
+    #rivals-daily-continue,
+    #rivals-wager-skip,
+    #rivals-wager-save {
       background: var(--brand-purple);
       color: white;
       border: 0;
@@ -741,7 +759,7 @@
     <p> Think you can forecast better than us? 😤 </p>
   
     <button id="rivals-toast-got-it" type="button"> Let's play! </button>
-  </div>
+  </div>    
     <!-- Daily rivals results toast -->
     <div id="rivals-daily-toast" role="dialog"
          aria-label="Daily rivals results" hidden>
@@ -751,6 +769,33 @@
     
       <div id="rivals-daily-results"> Your rivals results: </div>
       <button id="rivals-daily-continue" type="button"> Continue ✅ </button>
+    </div>
+
+    <!-- Daily rivals wager toast -->
+    <div id="rivals-wager-toast" role="dialog"
+         aria-label="Daily rivals wager"
+         data-storage-key=""
+         hidden>
+      <div class="rivals-toast-characters">🐍 🐺</div>
+      <h3> Today's Rivals Wager 🪙</h3>
+    
+      <p> Feeling lucky today? </p>
+    
+      <p id="rivals-wager-limit"></p>
+    
+      <label for="rivals-wager-amount"> My wager: </label>
+      <input id="rivals-wager-amount"
+             type="number" min="1" step="1">
+    
+      <p id="rivals-wager-message"></p>    
+      <div class="rivals-wager-actions">
+        <button id="rivals-wager-skip" type="button">
+          Skip 🪷
+        </button>
+        <button id="rivals-wager-save" type="button">
+          Wager 🪙
+        </button>
+      </div>
     </div>
   <script src="music.js"></script>
 
@@ -1046,6 +1091,59 @@
         }
     
         toast.hidden = true;
+        const wagerToast = document.getElementById("rivals-wager-toast");        
+        const introToast = document.getElementById("rivals-toast");
+        
+        if (
+          wagerToast.dataset.ready === "true" &&
+          introToast.hidden &&
+          isWagerOpen()
+        ) {
+          wagerToast.hidden = false;
+        }
+      });
+    
+    document.getElementById("rivals-wager-skip")
+      .addEventListener("click", () => {
+        const toast = document.getElementById("rivals-wager-toast");
+        const storageKey = toast.dataset.storageKey;
+    
+        if (storageKey) { localStorage.setItem(storageKey, "true"); }
+        toast.hidden = true;
+      });
+    
+    document.getElementById("rivals-wager-save")
+      .addEventListener("click", async () => {
+        const toast = document.getElementById("rivals-wager-toast");
+        const input = document.getElementById("rivals-wager-amount");
+        const save = document.getElementById("rivals-wager-save");
+        const message = document.getElementById("rivals-wager-message");
+    
+        const amount = Number(input.value);
+    
+        if (!Number.isSafeInteger(amount) ||
+            amount < 1 ||
+            amount > Number(input.max)) {
+          message.textContent = "Please enter a valid wager amount";
+          return;
+        }
+    
+        save.disabled = true;
+        message.textContent = "Placing my wager... 🪙";
+    
+        const { error } = await client.rpc("place_rivals_wager", {
+          p_amount: amount
+        });
+    
+        if (error) {
+          console.error("Could not place wager:", error);
+          message.textContent = error.message;
+          save.disabled = false;
+          return;
+        }
+    
+        message.textContent = `Wager placed: ${amount} 🪙! 🐍🐺`;
+        toast.hidden = true;
       });
     let currentUser = null;
     let originalProfile = { username: "", email: "" };
@@ -1273,6 +1371,87 @@
       return Number(data?.total_coins) || 0;
     }
 
+    function isWagerOpen() {
+      const parts = new Intl.DateTimeFormat("en-US", {
+        timeZone: "America/Los_Angeles",
+        hour: "2-digit",
+        minute: "2-digit",
+        hourCycle: "h23"
+      }).formatToParts(new Date());
+    
+      const get = type => Number(parts.find(p => p.type === type).value);    
+      const hour = get("hour");
+      const minute = get("minute");
+    
+      return hour < 12;
+    }
+    
+    function getWagerDate() {
+      return new Intl.DateTimeFormat("en-CA", {
+        timeZone: "America/Los_Angeles",
+        year: "numeric",
+        month: "2-digit",
+        day: "2-digit"
+      }).format(new Date());
+    }
+
+    async function prepareRivalsWagerToast(user) {
+      if (!user?.id) return false;
+    
+      const { data, error } = await client
+        .from("user_stats")
+        .select("met_rivals, coins")
+        .eq("user_id", user.id)
+        .maybeSingle();
+    
+      if (error || !data?.met_rivals) return false;
+      if (!isWagerOpen()) return false;      
+      setWagerAmountLimit(data.coins);
+      if (getMaxWager(data.coins) < 1) return false;
+      const wagerDate = getWagerDate();  // check wager availability with noon PT close time before showing toast
+
+      const { data: existingWager, error: wagerError } = await client
+        .from("wagers")
+        .select("id")
+        .eq("user_id", user.id)
+        .eq("wager_date", wagerDate)
+        .eq("wager_type", "rivals")
+        .maybeSingle();
+      
+      if (wagerError) {
+        console.error("Could not check today's wager:", wagerError);
+        return false;
+      }
+      
+      if (existingWager) return false;  
+      const storageKey = getWagerKey(user.id, wagerDate, "rivals");    
+      if (localStorage.getItem(storageKey) === "true") { return false; }
+    
+      const toast = document.getElementById("rivals-wager-toast");
+      toast.dataset.storageKey = storageKey;
+      toast.dataset.wagerDate = wagerDate;      
+      return true;
+    }
+    
+    function getWagerKey(userId, wagerDate, wagerType) { return `glean_wager_skip_${wagerType}_${userId}_${wagerDate}`; }
+    function getMaxWager(currentCoins) { return Math.floor(Math.max(0, Number(currentCoins) || 0) * 0.10); }
+    
+    function setWagerAmountLimit(currentCoins) {
+      const maxWager = getMaxWager(currentCoins);
+    
+      const input = document.getElementById("rivals-wager-amount");
+      const limit = document.getElementById("rivals-wager-limit");
+      const save = document.getElementById("rivals-wager-save");
+    
+      input.max = maxWager;
+      input.value = maxWager >= 1 ? 1 : "";
+    
+      save.disabled = maxWager < 1;    
+      limit.textContent = maxWager >= 1
+        ? `I can wager up to ${maxWager} coins today! 🪙`
+        : "I need at least 10 coins to place a wager. 🌷";
+    }
+    
     async function checkDailyRivalsResults(user) {
       if (!user?.id) return;
     
@@ -1329,7 +1508,7 @@
             ? "win"
             : myTotal < snakeTotal && myTotal < wolfTotal
               ? "loss"
-              : "neutral";
+              : "mixed";
         
         const rows = players.map(player => {
           const t = temps[player.id] || 0;
@@ -1354,7 +1533,7 @@
             color: "var(--brand-green)",
             background: "#f0fdf4"
           },
-          neutral: {
+          mixed: {
             icon: "🤝",
             title: "Mixed result! I didn't lose to both rivals :)",
             color: "var(--brand-purple)",
@@ -1384,7 +1563,7 @@
             "🐍🐺: Someone's feeling mighty clever today.",
             "🐍🐺: We'll be back with better forecasts."
           ],
-          neutral: [
+          mixed: [
             "🐍🐺: Interesting. Neither victory nor defeat.",
             "🐍🐺: We're circling each other now.",
             "🐍🐺: A draw? How delightfully neutral.",
@@ -1509,6 +1688,16 @@
     
       async function dismissToast() {
         toast.hidden = true;
+        const wagerToast = document.getElementById("rivals-wager-toast");
+        const resultsToast = document.getElementById("rivals-daily-toast");
+        
+        if (
+          wagerToast.dataset.ready === "true" &&
+          resultsToast.hidden &&
+          isWagerOpen()
+        ) {
+          wagerToast.hidden = false;
+        }
     
         const { error: saveError } = await client
           .from("user_stats")
@@ -1519,8 +1708,16 @@
           console.warn("Could not save rivals intro dismissal:", saveError.message);
         } else {
           localStorage.setItem(storageKey, "true");
+        
+          const wagerReady = await prepareRivalsWagerToast(user);
+          const wagerToast = document.getElementById("rivals-wager-toast");
+          const resultsToast = document.getElementById("rivals-daily-toast");
+          wagerToast.dataset.ready = wagerReady ? "true" : "false";
+        
+          if (wagerReady && resultsToast.hidden && isWagerOpen()) {
+            wagerToast.hidden = false;
+          }
         }
-      }
     
       document.getElementById("rivals-toast-close").onclick = dismissToast;
       document.getElementById("rivals-toast-got-it").onclick = dismissToast;
@@ -1546,6 +1743,23 @@
       await loadCoinHistory(user);
       await checkRivalsUnlock(user);
       await checkDailyRivalsResults(user);
+      
+      const introToast = document.getElementById("rivals-toast");
+      const wagerReady = introToast.hidden ? await prepareRivalsWagerToast(user) : false;
+      const wagerToast = document.getElementById("rivals-wager-toast");
+      const resultsToast = document.getElementById("rivals-daily-toast");
+      
+      wagerToast.dataset.ready = wagerReady ? "true" : "false";      
+      const introToast = document.getElementById("rivals-toast");
+      
+      if (
+        wagerReady &&
+        resultsToast.hidden &&
+        introToast.hidden &&
+        isWagerOpen()
+      ) {
+        wagerToast.hidden = false;
+      }
     }
 
     async function handleRecoveryCallback() {
