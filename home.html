@@ -1131,7 +1131,7 @@
         save.disabled = true;
         message.textContent = "Placing my wager... 🪙";
     
-        const { error } = await client.rpc("place_rivals_wager", {
+        const { error } = await client.rpc("place_rivals_wagers", {
           p_amount: amount
         });
     
