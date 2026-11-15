@@ -694,15 +694,15 @@
     </div>
 
   <section id="rivals-progress" hidden>
-    <h3> Unlock Rivals 🐍🐺 </h3>
+    <h3> 🐍 Unlock Rivals 🐺 </h3>
   
     <p> 🌟 Streak: <span id="rivals-streak-text"> 0 / 5 days </span></p>
     <progress id="rivals-streak-bar" value="0" max="5"></progress>
   
-    <p> 🪙 Lifetime Coins: <span id="rivals-coins-text"> 0 / 1,000 </span></p>
+    <p> 🪙 Total Coins: <span id="rivals-coins-text"> 0 / 1,000 </span></p>
     <progress id="rivals-coins-bar" value="0" max="1000"></progress>
   
-    <p> Reach either milestone to unlock Rivals Snake & Wolf! </p>
+    <p> Reach either milestone to unlock Rivals! </p>
   </section>
     
   <div class="category-buttons">
@@ -1699,7 +1699,7 @@
       const section = document.getElementById("rivals-progress");
       if (!section) return;
     
-      if (!stats) {
+      if (!stats || stats.met_rivals) {
         section.hidden = true;
         return;
       }
@@ -1707,7 +1707,7 @@
       const streak = Math.max(0, Number(stats.current_streak) || 0);
       const coins = Math.max(0, Number(stats.total_coins) || 0);
     
-      if (false) {  // hide progress once either unlock requirement is met
+      if (streak >= 5 || coins >= 1000) {  // hide progress once either unlock requirement is met
         section.hidden = true;
         return;
       }
