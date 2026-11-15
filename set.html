@@ -5,12 +5,48 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title> Set 🃏 | Glean 🔮 </title>
   <link rel="stylesheet" href="style.css">
+  
+  <style>
+    #set-board {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 12px;
+      max-width: 480px;
+      margin: 2rem auto;
+    }
+  
+    .set-card {
+      aspect-ratio: 3 / 2;
+      background: #faf5ff;
+      border: 2px solid #d9b7f5;
+      border-radius: 12px;
+      font-size: 2rem;
+      cursor: pointer;
+    }
+  </style>
+
 </head>
 
 <body>
   <main>
     <h1> Set 🃏 </h1>
     <p> Find three cards that make a Set! </p>
+
+    <div id="set-board">
+      <button class="set-card">🐰</button>
+      <button class="set-card">🐍</button>
+      <button class="set-card">🐺</button>
+      <button class="set-card">🐰</button>
+      <button class="set-card">🐍</button>
+      <button class="set-card">🐺</button>
+      <button class="set-card">🐰</button>
+      <button class="set-card">🐍</button>
+      <button class="set-card">🐺</button>
+      <button class="set-card">🐰</button>
+      <button class="set-card">🐍</button>
+      <button class="set-card">🐺</button>
+    </div>
+
 
     <a href="home.html"> Go to Home </a>
   </main>
