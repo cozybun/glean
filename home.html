@@ -311,6 +311,43 @@
       white-space: nowrap;
     }
 
+    /* Rivals unlock progress */
+    #rivals-progress {
+      max-width: 420px;
+      margin: 0 auto 2.5rem;
+      padding: 1.25rem;
+      text-align: center;
+      background: #faf5ff;
+      border: 2px solid #d9b7f5;
+      border-radius: 16px;
+    }
+    
+    #rivals-progress[hidden] {
+      display: none;
+    }
+    
+    #rivals-progress h3 {
+      margin: 0 0 1rem;
+      font-size: 1.3rem;
+    }
+    
+    #rivals-progress p {
+      margin: 0.8rem 0 0.4rem;
+    }
+    
+    #rivals-progress progress {
+      display: block;
+      width: 100%;
+      height: 16px;
+      accent-color: #BF40BF;
+    }
+    
+    #rivals-progress p:last-child {
+      margin-top: 1rem;
+      font-size: 0.9rem;
+      color: #64748b;
+    }
+
     .category-buttons {
       display: grid;
       grid-template-columns: repeat(2, 200px);
@@ -655,6 +692,18 @@
         </div>
       </div>
     </div>
+
+  <section id="rivals-progress" hidden>
+    <h3> Unlock Rivals 🐍🐺 </h3>
+  
+    <p> 🌟 Streak: <span id="rivals-streak-text"> 0 / 5 days </span></p>
+    <progress id="rivals-streak-bar" value="0" max="5"></progress>
+  
+    <p> 🪙 Lifetime Coins: <span id="rivals-coins-text"> 0 / 1,000 </span></p>
+    <progress id="rivals-coins-bar" value="0" max="1000"></progress>
+  
+    <p> Reach either milestone to unlock Rivals Snake & Wolf! </p>
+  </section>
     
   <div class="category-buttons">
     <a
@@ -1646,6 +1695,33 @@
         toast.hidden = false;
     }
 
+    function updateRivalsProgress(stats) {
+      const section = document.getElementById("rivals-progress");
+      if (!section) return;
+    
+      if (!stats || stats.met_rivals) {
+        section.hidden = true;
+        return;
+      }
+    
+      const streak = Math.max(0, Number(stats.current_streak) || 0);
+      const coins = Math.max(0, Number(stats.total_coins) || 0);
+    
+      if (streak >= 5 || coins >= 1000) {  // hide progress once either unlock requirement is met
+        section.hidden = true;
+        return;
+      }
+    
+      document.getElementById("rivals-streak-bar").value = Math.min(streak, 5);
+      document.getElementById("rivals-streak-text").textContent = `${streak} / 5 days`;
+    
+      document.getElementById("rivals-coins-bar").value = Math.min(coins, 1000);
+      document.getElementById("rivals-coins-text").textContent =
+        `${coins.toLocaleString()} / 1,000`;
+    
+      section.hidden = false;
+    }
+
     async function checkRivalsUnlock(user) {
       if (!user?.id) return;
     
@@ -1660,9 +1736,9 @@
         return;
       }
     
-      if (!data) return;
+      if (!data) return;      
+      updateRivalsProgress(data);
       if (data.met_rivals) return;  // already dismissed on any device
-      const storageKey = `glean_met_rivals${user.id}`;  // migrate the old browser-only flag
     
       if (localStorage.getItem(storageKey) === "true") {
         const { error: migrationError } = await client
