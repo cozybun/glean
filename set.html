@@ -23,14 +23,21 @@
       font-size: 2rem;
       cursor: pointer;
     }
+
+    .set-card.selected {
+      background: #e9d5ff;
+      border-color: #9333ea;
+      box-shadow: 0 0 0 3px #d8b4fe;
+      transform: translateY(-2px);
+    }
   </style>
 
 </head>
 
 <body>
   <main>
-    <h1> Set 🃏 </h1>
-    <p> Find three cards that make a Set! </p>
+    <a href="home.html"> Go to Home </a>
+    <h1> Set 🃏 </h1>    
 
     <div id="set-board">
       <button class="set-card">🐰</button>
@@ -46,9 +53,23 @@
       <button class="set-card">🐍</button>
       <button class="set-card">🐺</button>
     </div>
-
-
-    <a href="home.html"> Go to Home </a>
   </main>
+  <script>
+  const cards = document.querySelectorAll(".set-card");
+
+  cards.forEach(card => {
+    card.addEventListener("click", () => {
+      if (card.classList.contains("selected")) {  // clicking a selected card deselects it
+        card.classList.remove("selected");
+        return;
+      }
+
+      const selected = document.querySelectorAll(".set-card.selected"); // allow at most 3 selected cards
+      if (selected.length >= 3) return;
+
+      card.classList.add("selected");
+    });
+  });
+</script>
 </body>
 </html>
