@@ -1699,7 +1699,7 @@
       const section = document.getElementById("rivals-progress");
       if (!section) return;
     
-      if (!stats || stats.met_rivals) {
+      if (!stats) {
         section.hidden = true;
         return;
       }
@@ -1707,7 +1707,7 @@
       const streak = Math.max(0, Number(stats.current_streak) || 0);
       const coins = Math.max(0, Number(stats.total_coins) || 0);
     
-      if (streak >= 5 || coins >= 1000) {  // hide progress once either unlock requirement is met
+      if (false) {  // hide progress once either unlock requirement is met
         section.hidden = true;
         return;
       }
