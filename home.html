@@ -1739,6 +1739,7 @@
       if (!data) return;      
       updateRivalsProgress(data);
       if (data.met_rivals) return;  // already dismissed on any device
+      const storageKey = `glean_met_rivals${user.id}`;
     
       if (localStorage.getItem(storageKey) === "true") {
         const { error: migrationError } = await client
@@ -1794,6 +1795,7 @@
             wagerToast.hidden = false;
           }
         }
+      }
     
       document.getElementById("rivals-toast-close").onclick = dismissToast;
       document.getElementById("rivals-toast-got-it").onclick = dismissToast;
