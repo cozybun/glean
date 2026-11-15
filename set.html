@@ -38,24 +38,49 @@
   <main>
     <a href="home.html"> Go to Home </a>
     <h1> Set 🃏 </h1>    
-
+    
     <div id="set-board">
-      <button class="set-card">🐰</button>
-      <button class="set-card">🐍</button>
-      <button class="set-card">🐺</button>
-      <button class="set-card">🐰</button>
-      <button class="set-card">🐍</button>
-      <button class="set-card">🐺</button>
-      <button class="set-card">🐰</button>
-      <button class="set-card">🐍</button>
-      <button class="set-card">🐺</button>
-      <button class="set-card">🐰</button>
-      <button class="set-card">🐍</button>
-      <button class="set-card">🐺</button>
+      <button class="set-card" data-shape="bun" data-color="green" data-number="1" data-shading="solid"> 🐰</button>
+      <button class="set-card" data-shape="snake" data-color="red" data-number="2" data-shading="striped"> 🐍 </button>
+      <button class="set-card" data-shape="wolf" data-color="blue" data-number="3" data-shading="outline"> 🐺 </button>
+    
+      <button class="set-card" data-shape="bun" data-color="red" data-number="2" data-shading="outline"> 🐰 </button>
+      <button class="set-card" data-shape="snake" data-color="blue" data-number="3" data-shading="solid"> 🐍 </button>
+      <button class="set-card" data-shape="wolf" data-color="green" data-number="1" data-shading="striped"> 🐺 </button>
+    
+      <button class="set-card" data-shape="bun" data-color="blue" data-number="3" data-shading="striped"> 🐰 </button>
+      <button class="set-card" data-shape="snake" data-color="green" data-number="1" data-shading="outline"> 🐍 </button>
+      <button class="set-card" data-shape="wolf" data-color="red" data-number="2" data-shading="solid"> 🐺 </button>
+    
+      <button class="set-card" data-shape="bun" data-color="green" data-number="3" data-shading="solid"> 🐰 </button>
+      <button class="set-card" data-shape="snake" data-color="red" data-number="1" data-shading="striped"> 🐍 </button>
+      <button class="set-card" data-shape="wolf" data-color="blue" data-number="2" data-shading="outline"> 🐺 </button>
     </div>
+
   </main>
   <script>
   const cards = document.querySelectorAll(".set-card");
+    
+  const cardColors = {
+    green: "#16a34a",
+    red: "#dc2626",
+    blue: "#2563eb"
+  };
+  
+  cards.forEach(card => {
+    const shape = card.dataset.shape;
+    const color = card.dataset.color;
+    const number = Number(card.dataset.number);
+  
+    const emoji = {
+      bun: "🐰",
+      snake: "🐍",
+      wolf: "🐺"
+    }[shape];
+  
+    card.textContent = Array(number).fill(emoji).join(" ");
+    card.style.color = cardColors[color];
+  });
 
   cards.forEach(card => {
     card.addEventListener("click", () => {
