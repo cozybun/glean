@@ -1824,9 +1824,7 @@
       const wagerReady = introToast.hidden ? await prepareRivalsWagerToast(user) : false;
       const wagerToast = document.getElementById("rivals-wager-toast");
       const resultsToast = document.getElementById("rivals-daily-toast");
-      
       wagerToast.dataset.ready = wagerReady ? "true" : "false";      
-      const introToast = document.getElementById("rivals-toast");
       
       if (
         wagerReady &&
