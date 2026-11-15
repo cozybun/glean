@@ -77,8 +77,22 @@
       snake: "🐍",
       wolf: "🐺"
     }[shape];
-  
-    card.textContent = Array(number).fill(emoji).join(" ");
+
+    if (shape === "bun") {
+      const bunny = `
+        <svg viewBox="0 0 100 100" width="45" height="45"
+             xmlns="http://www.w3.org/2000/svg">
+          <ellipse cx="35" cy="25" rx="10" ry="24" fill="currentColor"/>
+          <ellipse cx="65" cy="25" rx="10" ry="24" fill="currentColor"/>
+          <circle cx="50" cy="62" r="30" fill="currentColor"/>
+        </svg>
+      `;
+    
+      card.innerHTML = Array(number).fill(bunny).join("");
+    } else {
+      card.textContent = Array(number).fill(emoji).join(" ");
+    }
+    
     card.style.color = cardColors[color];
   });
 
