@@ -41,19 +41,18 @@
     
     /* Striped Set animals */
     .set-card[data-shading="striped"] svg [fill="currentColor"] {
-      fill: url(#set-stripes);
       stroke: currentColor;
       stroke-width: 3;
       stroke-linejoin: round;
     }    
-    .set-card[data-color="green"] {
-      --stripe-color: #16a34a;
+    .set-card[data-shading="striped"][data-color="green"] svg [fill="currentColor"] {
+      fill: url(#stripes-green);
     }    
-    .set-card[data-color="red"] {
-      --stripe-color: #dc2626;
-    }    
-    .set-card[data-color="blue"] {
-      --stripe-color: #2563eb;
+    .set-card[data-shading="striped"][data-color="red"] svg [fill="currentColor"] {
+      fill: url(#stripes-red);
+    }
+    .set-card[data-shading="striped"][data-color="blue"] svg [fill="currentColor"] {
+      fill: url(#stripes-blue);
     }
   </style>
 </head>
@@ -83,16 +82,24 @@
 
   </main>
   <script>    
+  
   const stripePattern = `
     <svg width="0" height="0" aria-hidden="true"
          xmlns="http://www.w3.org/2000/svg">
       <defs>
-        <pattern id="set-stripes"
-                 width="8" height="8"
+        <pattern id="stripes-green" width="8" height="8"
                  patternUnits="userSpaceOnUse">
-          <path d="M 0 0 L 8 8"
-                stroke="currentColor"
-                stroke-width="3"/>
+          <path d="M 0 0 L 8 8" stroke="#16a34a" stroke-width="3"/>
+        </pattern>
+  
+        <pattern id="stripes-red" width="8" height="8"
+                 patternUnits="userSpaceOnUse">
+          <path d="M 0 0 L 8 8" stroke="#dc2626" stroke-width="3"/>
+        </pattern>
+  
+        <pattern id="stripes-blue" width="8" height="8"
+                 patternUnits="userSpaceOnUse">
+          <path d="M 0 0 L 8 8" stroke="#2563eb" stroke-width="3"/>
         </pattern>
       </defs>
     </svg>
