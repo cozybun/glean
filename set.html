@@ -114,6 +114,17 @@
     blue: "#2563eb"
   };
   
+  function isValidSet(selectedCards) {
+    const properties = ["shape", "color", "number", "shading"];
+  
+    return properties.every(property => {
+      const values = selectedCards.map(card => card.dataset[property]);
+      const uniqueValues = new Set(values);
+  
+      return uniqueValues.size === 1 || uniqueValues.size === 3;
+    });
+  }
+  
   cards.forEach(card => {
     const shape = card.dataset.shape;
     const color = card.dataset.color;
@@ -195,7 +206,18 @@
       const selected = document.querySelectorAll(".set-card.selected"); // allow at most 3 selected cards
       if (selected.length >= 3) return;
 
-      card.classList.add("selected");
+      card.classList.add("selected");      
+      const chosenCards = [...document.querySelectorAll(".set-card.selected")];
+      
+      if (chosenCards.length === 3) {
+        if (isValidSet(chosenCards)) {
+          alert("Valid Set! 🎉🐰");
+        } else {
+          alert("Not a Set! 🫣");
+        }
+      
+        chosenCards.forEach(chosen => chosen.classList.remove("selected"));
+      }
     });
   });
 </script>
