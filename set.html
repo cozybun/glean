@@ -276,70 +276,77 @@
     card.style.color = cardColors[color];
     }
     cards.forEach(card => renderCard(card));
-
+  
   cards.forEach(card => {
     card.addEventListener("click", () => {
-      if (card.classList.contains("selected")) {  // clicking a selected card deselects it
+      if (card.classList.contains("selected")) {
         card.classList.remove("selected");
         return;
       }
-
-      const selected = document.querySelectorAll(".set-card.selected");  // allow at most 3 selected cards
+  
+      const selected = document.querySelectorAll(".set-card.selected");
       if (selected.length >= 3) return;
-
-      card.classList.add("selected");      
+  
+      card.classList.add("selected");
+  
       const chosenCards = [...document.querySelectorAll(".set-card.selected")];
-      
+  
       if (chosenCards.length === 3) {
         const message = document.getElementById("set-message");
-      
+  
         if (isValidSet(chosenCards)) {
           message.textContent = "Valid Set! 🎉";
           message.style.color = "#16a34a";
-          
+  
           chosenCards.forEach(card => {
             const nextCard = deck.pop();
             if (!nextCard) return;
-          
+  
             card.dataset.shape = nextCard.shape;
             card.dataset.color = nextCard.color;
             card.dataset.number = nextCard.number;
             card.dataset.shading = nextCard.shading;
             renderCard(card);
           });
-          
-        if (!currentBoardHasSet() && deck.length >= 12) {  // put the current board back into the deck
-          cards.forEach(card => {
-            deck.push({
-              shape: card.dataset.shape,
-              color: card.dataset.color,
-              number: Number(card.dataset.number),
-              shading: card.dataset.shading
+  
+          if (!currentBoardHasSet() && deck.length >= 12) {
+            cards.forEach(card => {
+              deck.push({
+                shape: card.dataset.shape,
+                color: card.dataset.color,
+                number: Number(card.dataset.number),
+                shading: card.dataset.shading
+              });
             });
-          });
-        
-          shuffleDeck(deck);  // shuffle until there is a playable board          
-          let newBoard = deck.slice(0, 12);
-          while (!boardHasSet(newBoard)) {
+  
             shuffleDeck(deck);
-            newBoard = deck.slice(0, 12);
+  
+            let newBoard = deck.slice(0, 12);
+  
+            while (!boardHasSet(newBoard)) {
+              shuffleDeck(deck);
+              newBoard = deck.slice(0, 12);
+            }
+  
+            deck.splice(0, 12);
+  
+            cards.forEach((card, index) => {
+              const dealt = newBoard[index];
+              card.dataset.shape = dealt.shape;
+              card.dataset.color = dealt.color;
+              card.dataset.number = dealt.number;
+              card.dataset.shading = dealt.shading;
+              renderCard(card);
+            });
+  
+            message.textContent = "Valid Set! New board dealt! 🎉";
           }
-        
-          deck.splice(0, 12);          
-          cards.forEach((card, index) => {
-            const dealt = newBoard[index];
-            card.dataset.shape = dealt.shape;
-            card.dataset.color = dealt.color;
-            card.dataset.number = dealt.number;
-            card.dataset.shading = dealt.shading;
-            renderCard(card);
-          });
-        
-        message.textContent = "Valid Set! New board dealt! 🎉";
-        }
+  
         } else {
           message.textContent = "Not a Set! Try again 😅";
-      
+          message.style.color = "#dc2626";
+        }
+  
         chosenCards.forEach(chosen => chosen.classList.remove("selected"));
       }
     });
