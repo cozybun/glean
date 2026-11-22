@@ -60,7 +60,8 @@
 <body>
   <main>
     <a href="home.html"> Go to Home </a>
-    <h1> Set 🃏 </h1>    
+    <h1> Set 🃏 </h1>
+    <p id="set-message" aria-live="polite"> Select 3 cards to find a Set! 🃏</p>
     
     <div id="set-board">
       <button class="set-card" data-shape="bun" data-color="green" data-number="1" data-shading="solid"> 🐰</button>
@@ -113,6 +114,74 @@
     red: "#dc2626",
     blue: "#2563eb"
   };
+      
+  const shapes = ["bun", "snake", "wolf"];
+  const colors = ["green", "red", "blue"];
+  const numbers = [1, 2, 3];
+  const shadings = ["solid", "striped", "outline"];  
+  const deck = [];
+  
+  for (const shape of shapes) {
+    for (const color of colors) {
+      for (const number of numbers) {
+        for (const shading of shadings) {
+          deck.push({ shape, color, number, shading });
+        }
+      }
+    }
+  }  
+  console.log("Set deck size:", deck.length);
+    
+  function shuffleDeck(cards) {
+    for (let i = cards.length - 1; i > 0; i--) {
+      const j = Math.floor(Math.random() * (i + 1));
+  
+      [cards[i], cards[j]] = [cards[j], cards[i]];
+    }
+  
+    return cards;
+  }  
+  shuffleDeck(deck);    
+  
+  function boardHasSet(board) {
+    for (let i = 0; i < board.length - 2; i++) {
+      for (let j = i + 1; j < board.length - 1; j++) {
+        for (let k = j + 1; k < board.length; k++) {
+          const threeCards = [board[i], board[j], board[k]];
+  
+          const valid = ["shape", "color", "number", "shading"].every(property => {
+            const values = threeCards.map(card => card[property]);
+            const uniqueValues = new Set(values);
+  
+            return uniqueValues.size === 1 || uniqueValues.size === 3;
+          });
+  
+          if (valid) return true;
+        }
+      }
+    }
+  
+    return false;
+  }
+  
+  let startingCards = deck.slice(0, 12);  
+  while (!boardHasSet(startingCards)) {
+    shuffleDeck(deck);
+    startingCards = deck.slice(0, 12);
+  }
+  
+  deck.splice(0, 12);  // remove the 12 dealt cards from deck  
+  console.log("Starting board has a Set:", boardHasSet(startingCards));
+  
+  cards.forEach((card, index) => {
+    const dealt = startingCards[index];
+  
+    card.dataset.shape = dealt.shape;
+    card.dataset.color = dealt.color;
+    card.dataset.number = dealt.number;
+    card.dataset.shading = dealt.shading;
+  });
+  console.log("First 3 shuffled cards:", deck.slice(0, 3));
   
   function isValidSet(selectedCards) {
     const properties = ["shape", "color", "number", "shading"];
@@ -125,7 +194,7 @@
     });
   }
   
-  cards.forEach(card => {
+  function renderCard(card) {
     const shape = card.dataset.shape;
     const color = card.dataset.color;
     const number = Number(card.dataset.number);
@@ -194,7 +263,8 @@
     }
     
     card.style.color = cardColors[color];
-  });
+    }
+    cards.forEach(card => renderCard(card));
 
   cards.forEach(card => {
     card.addEventListener("click", () => {
@@ -203,17 +273,32 @@
         return;
       }
 
-      const selected = document.querySelectorAll(".set-card.selected"); // allow at most 3 selected cards
+      const selected = document.querySelectorAll(".set-card.selected");  // allow at most 3 selected cards
       if (selected.length >= 3) return;
 
       card.classList.add("selected");      
       const chosenCards = [...document.querySelectorAll(".set-card.selected")];
       
       if (chosenCards.length === 3) {
+        const message = document.getElementById("set-message");
+      
         if (isValidSet(chosenCards)) {
-          alert("Valid Set! 🎉🐰");
+          message.textContent = "Valid Set! 🎉";
+          message.style.color = "#16a34a";
+          
+          chosenCards.forEach(card => {
+            const nextCard = deck.pop();
+            if (!nextCard) return;
+          
+            card.dataset.shape = nextCard.shape;
+            card.dataset.color = nextCard.color;
+            card.dataset.number = nextCard.number;
+            card.dataset.shading = nextCard.shading;
+            renderCard(card);
+          });
         } else {
-          alert("Not a Set! 🫣");
+          message.textContent = "Not a Set! Try again 😅";
+          message.style.color = "#dc2626";
         }
       
         chosenCards.forEach(chosen => chosen.classList.remove("selected"));
