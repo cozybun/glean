@@ -11,8 +11,9 @@
       display: grid;
       grid-template-columns: repeat(3, 1fr);
       gap: 12px;
-      max-width: 480px;
       margin: 2rem auto;
+      max-width: 480px;
+      width: min(480px, 100%);
     }
   
     .set-card {
@@ -299,8 +300,11 @@
           message.style.color = "#16a34a";
   
           chosenCards.forEach(card => {
-            const nextCard = deck.pop();
-            if (!nextCard) return;
+            const nextCard = deck.pop();            
+            if (!nextCard) {
+              card.style.display = "none";
+              return;
+            }
   
             card.dataset.shape = nextCard.shape;
             card.dataset.color = nextCard.color;
