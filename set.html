@@ -15,6 +15,14 @@
       max-width: 480px;
       width: min(480px, 100%);
     }
+
+    body:has(#set-board) main {
+      width: 100%;
+      max-width: none;
+      margin-left: auto;
+      margin-right: auto;
+      box-sizing: border-box;
+    }
   
     .set-card {
       aspect-ratio: 3 / 2;
