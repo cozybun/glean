@@ -43,7 +43,7 @@
       border-radius: 12px;
       font-size: 2rem;
       cursor: pointer;
-      padding: 0;
+      padding: 10px;
       min-width: 0;
       box-sizing: border-box;
     }
@@ -78,12 +78,27 @@
     .set-card[data-shading="striped"][data-color="blue"] svg [fill="currentColor"] {
       fill: url(#stripes-blue);
     }
+
+    .set-home-btn {
+      display: table;
+      margin: 0 auto;
+      padding: 0.75rem 1.4rem;
+      background: var(--brand-purple);
+      color: white;
+      border-radius: 12px;
+      font-weight: 700;
+      text-decoration: none;
+    }
+    
+    .set-home-btn:hover {
+      background: var(--dark-purple);
+    }
   </style>
 </head>
 
 <body>
   <main>
-    <a href="home.html"> Go to Home </a>
+    <a href="home.html" class="set-home-btn"> Go to Home </a>
     <h1> Set 🃏 </h1>
     <p id="set-message" aria-live="polite"> Select 3 cards to find a Set! 🃏</p>
     
@@ -208,12 +223,14 @@
   console.log("First 3 shuffled cards:", deck.slice(0, 3));
   
   function currentBoardHasSet() {
-    const board = [...cards].map(card => ({
-      shape: card.dataset.shape,
-      color: card.dataset.color,
-      number: Number(card.dataset.number),
-      shading: card.dataset.shading
-    }));
+      const board = [...cards]
+        .filter(card => card.style.display !== "none")
+        .map(card => ({
+          shape: card.dataset.shape,
+          color: card.dataset.color,
+          number: Number(card.dataset.number),
+          shading: card.dataset.shading
+        }));
   
     return boardHasSet(board);
   }
@@ -335,40 +352,72 @@
             card.dataset.shading = nextCard.shading;
             renderCard(card);
           });
-  
-          if (!currentBoardHasSet() && deck.length >= 12) {
-            cards.forEach(card => {
-              deck.push({
+                    
+          if (!currentBoardHasSet() && deck.length > 0) {
+            const visibleCards = [...cards].filter(
+              card => card.style.display !== "none"
+            );
+          
+            const pool = [  // mix the unused deck with cards currently on the board
+              ...deck,
+              ...visibleCards.map(card => ({
                 shape: card.dataset.shape,
                 color: card.dataset.color,
                 number: Number(card.dataset.number),
                 shading: card.dataset.shading
-              });
-            });
-  
-            shuffleDeck(deck);
-  
-            let newBoard = deck.slice(0, 12);
-  
-            while (!boardHasSet(newBoard)) {
-              shuffleDeck(deck);
-              newBoard = deck.slice(0, 12);
+              }))
+            ];
+          
+            shuffleDeck(pool);          
+            const boardSize = visibleCards.length;  // try to find a playable board without changing its size
+            let newBoard = pool.slice(0, boardSize);
+          
+            while (!boardHasSet(newBoard) && boardHasSet(pool)) {
+              shuffleDeck(pool);
+              newBoard = pool.slice(0, boardSize);
             }
-  
-            deck.splice(0, 12);
-  
-            cards.forEach((card, index) => {
-              const dealt = newBoard[index];
-              card.dataset.shape = dealt.shape;
-              card.dataset.color = dealt.color;
-              card.dataset.number = dealt.number;
-              card.dataset.shading = dealt.shading;
-              renderCard(card);
-            });
-  
-            message.textContent = "Valid Set! New board dealt! 🎉";
+          
+            if (boardHasSet(newBoard)) {
+              visibleCards.forEach((card, index) => {
+                const dealt = newBoard[index];
+          
+                card.dataset.shape = dealt.shape;
+                card.dataset.color = dealt.color;
+                card.dataset.number = dealt.number;
+                card.dataset.shading = dealt.shading;
+                renderCard(card);
+              });
+          
+              deck.length = 0;
+              deck.push(...pool.slice(boardSize));
+          
+              message.textContent = "Valid Set! New board dealt! 🎉";
+            }
           }
-  
+
+        const remaining = [...cards].filter(
+          card => card.style.display !== "none"
+        );
+        
+        const remainingPool = [
+          ...deck,
+          ...remaining.map(card => ({
+            shape: card.dataset.shape,
+            color: card.dataset.color,
+            number: Number(card.dataset.number),
+            shading: card.dataset.shading
+          }))
+        ];
+        
+        if (!boardHasSet(remainingPool)) {
+          message.textContent = "Game over! 🎉 No more Sets remain!";
+        
+          remaining.forEach(card => {
+            card.disabled = true;
+          });
+        } else if (deck.length === 0) {
+          message.textContent = "Deck empty! Find the remaining Sets! 🃏";
+        }
         } else {
           message.textContent = "Not a Set! Try again 😅";
           message.style.color = "#dc2626";
