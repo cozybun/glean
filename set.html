@@ -222,6 +222,22 @@
   });
   console.log("First 3 shuffled cards:", deck.slice(0, 3));
   
+  function findSet(board) {
+    for (let i = 0; i < board.length - 2; i++) {
+      for (let j = i + 1; j < board.length - 1; j++) {
+        for (let k = j + 1; k < board.length; k++) {
+          const trio = [board[i], board[j], board[k]];
+  
+          if (boardHasSet(trio)) {
+            return trio;
+          }
+        }
+      }
+    }
+  
+    return null;
+  }
+    
   function currentBoardHasSet() {
       const board = [...cards]
         .filter(card => card.style.display !== "none")
@@ -368,14 +384,20 @@
               }))
             ];
           
-            shuffleDeck(pool);          
-            const boardSize = visibleCards.length;  // try to find a playable board without changing its size
-            let newBoard = pool.slice(0, boardSize);
-          
-            while (!boardHasSet(newBoard) && boardHasSet(pool)) {
-              shuffleDeck(pool);
-              newBoard = pool.slice(0, boardSize);
-            }
+            const boardSize = visibleCards.length;
+            const guaranteedSet = findSet(pool);
+            
+            if (guaranteedSet) {
+              const otherCards = pool.filter(
+                card => !guaranteedSet.includes(card)
+              );
+            
+              shuffleDeck(otherCards);
+            
+              pool.length = 0;
+              pool.push(...guaranteedSet, ...otherCards);
+            }            
+            const newBoard = pool.slice(0, boardSize);
           
             if (boardHasSet(newBoard)) {
               visibleCards.forEach((card, index) => {
