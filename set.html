@@ -105,6 +105,70 @@
     .set-home-btn:hover {
       background: var(--dark-purple);
     }
+
+    #set-rules-btn,
+    #set-rules-close {
+      display: block;
+      margin: 0.75rem auto;
+      padding: 0.6rem 1rem;
+      background: var(--brand-purple);
+      color: white;
+      border: none;
+      border-radius: 10px;
+      font-weight: 700;
+      cursor: pointer;
+    }
+    
+    #set-rules-btn:hover,
+    #set-rules-close:hover {
+      background: var(--dark-purple);
+    }
+    
+    #set-rules-toast {
+      position: fixed;
+      width: min(360px, 90vw);
+      max-height: 85vh;
+      overflow-y: auto;
+      box-sizing: border-box;
+      background: #faf5ff;
+      color: #333;
+      border: 2px solid #d9b7f5;
+      border-radius: 16px;
+      padding: 1.25rem;
+      text-align: center;
+      box-shadow: 0 8px 30px rgba(0,0,0,0.18);
+    }
+    
+    #set-rules-toast::backdrop {
+      background: rgba(0,0,0,0.25);
+    }
+    
+    #set-rules-toast p {
+      font-size: 0.95rem;
+      line-height: 1.5;
+    }
+    
+    #set-rules-example {
+      display: flex;
+      justify-content: center;
+      gap: 8px;
+    }
+    
+    .set-example-card {
+      width: 80px;
+      aspect-ratio: 3 / 2;
+      border: 2px solid #d9b7f5;
+      border-radius: 10px;
+      background: white;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+    
+    .set-example-card svg {
+      width: 40px;
+      height: 40px;
+    }
   </style>
 </head>
 
@@ -112,6 +176,41 @@
   <main>
     <a href="home.html" class="set-home-btn"> Go to Home </a>
     <h1> Set 🃏 </h1>
+    <button id="set-rules-btn" type="button">
+      How to Play 🃏
+    </button>
+    
+    <dialog id="set-rules-toast" aria-labelledby="set-rules-title">
+      <h3 id="set-rules-title"> How to Play 🃏 </h3>
+    
+      <p> Each card has 4 features: </p>
+    
+      <p>
+        <strong> Shape: </strong> Bun, Snake, or Wolf <br>
+        <strong> Color: </strong> Red, Green, or Blue <br>
+        <strong> Shading: </strong> Solid, Striped, or Outline <br>
+        <strong> Number: </strong> 1, 2, or 3
+      </p>
+    
+      <p>
+        Select 3 cards. For <strong> each feature </strong>, all 3 cards must be either <strong> all the same </strong> or <strong> all different </strong>.
+      </p>
+    
+      <div id="set-rules-example"></div>    
+      <p>
+        <strong> ✅ Valid Set! </strong><br>
+        Same shape, number, and shading. Different colors.
+      </p>
+    
+      <p>
+        Correct Sets are replaced with new cards when available.
+        Keep finding Sets until no more remain!
+      </p>
+    
+      <button id="set-rules-close" type="button">
+        Understood! 😊
+      </button>
+    </dialog>
     <p id="set-message" aria-live="polite"> Select 3 cards to find a Set! 🃏</p>
     
     <div id="set-board">
@@ -360,8 +459,7 @@
       const selected = document.querySelectorAll(".set-card.selected");
       if (selected.length >= 3) return;
   
-      card.classList.add("selected");
-  
+      card.classList.add("selected");  
       const chosenCards = [...document.querySelectorAll(".set-card.selected")];
   
       if (chosenCards.length === 3) {
@@ -465,6 +563,31 @@
       }
     });
   });
+    const rulesToast = document.getElementById("set-rules-toast");
+    document.getElementById("set-rules-btn")
+      .addEventListener("click", () => {
+        rulesToast.showModal();
+      });
+    
+    document.getElementById("set-rules-close")
+      .addEventListener("click", () => {
+        rulesToast.close();
+      });
+    
+    document.getElementById("set-rules-example").innerHTML =
+      ["#dc2626", "#16a34a", "#2563eb"].map(color => `
+        <div class="set-example-card">
+          <svg viewBox="0 0 100 100" style="color:${color}">
+            <path d="M 26 44
+                     C 12 -8, 49 -8, 44 33
+                     Q 50 31, 56 33
+                     C 51 -8, 88 -8, 74 44
+                     C 92 65, 78 92, 50 92
+                     C 22 92, 8 65, 26 44 Z"
+                  fill="currentColor"/>
+          </svg>
+        </div>
+      `).join("");
 </script>
 </body>
 </html>
