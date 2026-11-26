@@ -270,6 +270,7 @@
   const numbers = [1, 2, 3];
   const shadings = ["solid", "striped", "outline"];  
   const deck = [];
+  let setStartTime = null;
   
   for (const shape of shapes) {
     for (const color of colors) {
@@ -459,7 +460,11 @@
       const selected = document.querySelectorAll(".set-card.selected");
       if (selected.length >= 3) return;
   
-      card.classList.add("selected");  
+      if (setStartTime === null) {
+        setStartTime = performance.now();
+      }
+      
+      card.classList.add("selected");
       const chosenCards = [...document.querySelectorAll(".set-card.selected")];
   
       if (chosenCards.length === 3) {
@@ -546,8 +551,23 @@
         ];
         
         if (!boardHasSet(remainingPool)) {
-          message.textContent = "Game over! 🎉 No more Sets remain!";
-        
+          const elapsedSeconds = Math.max(
+            1,
+            Math.floor((performance.now() - setStartTime) / 1000)
+          );
+          
+          const minutes = Math.floor(elapsedSeconds / 60);
+          const seconds = elapsedSeconds % 60;
+          const formattedTime = `${minutes}:${String(seconds).padStart(2, "0")}`;
+          
+          message.textContent = `I won the game! 🎉 No more Sets remain!`;
+          
+          const timeResult = document.createElement("p");
+          timeResult.textContent = `Completion time: ${formattedTime} ⏱️`;
+          timeResult.style.textAlign = "center";
+          timeResult.style.fontWeight = "700";
+          
+          message.after(timeResult);        
           remaining.forEach(card => {
             card.disabled = true;
           });
