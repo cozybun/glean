@@ -4,6 +4,7 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title> Set 🃏 | Glean 🔮 </title>
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
   <link rel="stylesheet" href="style.css">
   
   <style>
@@ -271,6 +272,42 @@
   const shadings = ["solid", "striped", "outline"];  
   const deck = [];
   let setStartTime = null;
+  const SUPABASE_URL = "https://ckyqknlxmjqlkqnxhgef.supabase.co";
+  const SUPABASE_PUB_KEY = "sb_publishable_lQ27fzzwJf27dUWPEW8UQA_NTY7naO6";
+  
+  let client = null;
+  
+  try {
+    client = supabase.createClient(
+      SUPABASE_URL,
+      SUPABASE_PUB_KEY
+    );
+  } catch (error) {
+    console.warn("Supabase unavailable:", error.message);
+  }
+
+  async function saveSetPR(elapsedSeconds) {
+    if (!client) return null;
+  
+    try {
+      const { data: { session }, error: sessionError } =
+        await client.auth.getSession();
+  
+      if (sessionError) throw sessionError;
+      if (!session) return null;
+  
+      const { data, error } = await client.rpc("save_set_pr", {
+        p_seconds: elapsedSeconds
+      });
+  
+      if (error) throw error;
+  
+      return data;
+    } catch (error) {
+      console.warn("Set PR unavailable:", error.message);
+      return null;
+    }
+  }
   
   for (const shape of shapes) {
     for (const color of colors) {
@@ -567,7 +604,21 @@
           timeResult.style.textAlign = "center";
           timeResult.style.fontWeight = "700";
           
-          message.after(timeResult);        
+          message.after(timeResult);
+          saveSetPR(elapsedSeconds).then(bestSeconds => {
+            if (bestSeconds === null) return;
+          
+            const bestMinutes = Math.floor(bestSeconds / 60);
+            const bestRemainder = bestSeconds % 60;
+            const bestTime = `${bestMinutes}:${String(bestRemainder).padStart(2, "0")}`;
+          
+            const prResult = document.createElement("p");
+            prResult.textContent = `Personal best: ${bestTime} 🏆`;
+            prResult.style.textAlign = "center";
+            prResult.style.fontWeight = "700";
+          
+            timeResult.after(prResult);
+          });
           remaining.forEach(card => {
             card.disabled = true;
           });
