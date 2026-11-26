@@ -3,7 +3,8 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title> 🌞 Glean 🔮 </title>
+  <title> 🌞 Glean 🔮 </title>\
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
   <style>
     :root {
       --brand-blue: #6495ED;
@@ -191,7 +192,40 @@
     </div>
   </main>
 
-  <script>
+  <script>    
+    const SUPABASE_URL = "https://ckyqknlxmjqlkqnxhgef.supabase.co";
+    const SUPABASE_PUB_KEY = "sb_publishable_lQ27fzzwJf27dUWPEW8UQA_NTY7naO6";
+        
+    async function recordSiteVisit() {
+      try {
+        const client = supabase.createClient(
+          SUPABASE_URL,
+          SUPABASE_PUB_KEY
+        );
+        const key = "glean_visitor_id";
+        let visitorId = localStorage.getItem(key);
+    
+        if (!visitorId) {
+          visitorId = crypto.randomUUID();
+          localStorage.setItem(key, visitorId);
+        }
+    
+        const params = new URLSearchParams(window.location.search);    
+        const { error } = await client.rpc("record_site_visit", {
+          p_visitor_id: visitorId,
+          p_utm_source: params.get("utm_source"),
+          p_utm_campaign: params.get("utm_campaign")
+        });
+    
+        if (error) {
+          console.warn("Visitor tracking failed:", error.message);
+        }
+      } catch (error) {
+        console.warn("Visitor tracking unavailable:", error.message);
+      }
+    }
+    
+    recordSiteVisit();
     const learnBtn = document.getElementById("learnBtn");
     const tryBtn = document.getElementById("tryBtn");
     const learnPanel = document.getElementById("learnPanel");
