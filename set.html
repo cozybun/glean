@@ -13,8 +13,8 @@
       grid-template-columns: repeat(3, 1fr);
       gap: 12px;
       margin: 2rem auto;
-      max-width: 480px;
-      width: min(480px, 100%);
+      max-width: 500px;
+      width: min(500px, 100%);
     }
 
     main > a,
@@ -174,18 +174,38 @@
     }
 
     .music-wrap {
-      position: absolute;
-      top: 10px;
-      right: 10px;
+      width: 100%;
+      max-width: 480px;
+      margin: 0 auto 0.5rem;
+      display: flex;
+      justify-content: flex-end;
+      align-items: center;
+      gap: 0.45rem;
     }
-
+    
     #musicToggle {
-      width: 2rem;
-      height: 2rem;
+      width: 1.8rem;
+      height: 1.8rem;
+      border: 1px solid #888;
+      border-radius: 10px;
+      background: #fff;
       padding: 0;
       font-size: 1rem;
-      display: grid;
-      place-items: center;
+      line-height: 1;
+      cursor: pointer;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+    }
+    
+    #musicToggle:hover {
+      transform: translateY(-1px);
+      background: #f8fafc;
+      box-shadow: 0 8px 22px rgba(15, 23, 42, 0.3);
+    }
+    
+    #musicToggle:active {
+      transform: scale(0.96);
     }
   </style>
 </head>
