@@ -1755,6 +1755,7 @@
       const isTemps = isDaily || isHourly;
       const isFinance = state.mode === "finance";
       const isQuestions = state.mode === "questions";
+      const isWagers = state.mode === "wagers";
     
       tempsModeBtn.classList.toggle("active", isTemps);
       financeModeBtn.classList.toggle("active", isFinance);    
@@ -1762,6 +1763,8 @@
       financeModeBtn.classList.toggle("secondary", !isFinance);
       questionsModeBtn.classList.toggle("active", isQuestions);
       questionsModeBtn.classList.toggle("secondary", !isQuestions);
+      wagersModeBtn.classList.toggle("active", isWagers);
+      wagersModeBtn.classList.toggle("secondary", !isWagers);
     
       dailyModeBtn.classList.toggle("active", isDaily);
       hourlyModeBtn.classList.toggle("active", isHourly);    
@@ -1772,6 +1775,8 @@
         searchInput.placeholder = "City or Date";
       } else if (isFinance) {
         searchInput.placeholder = "Asset or Date";
+      } else if (isWagers) {
+        searchInput.placeholder = "Type, Result or Date";
       } else {
         searchInput.placeholder = "Question or Date";
       }
@@ -1939,6 +1944,7 @@
     hourlyModeBtn.addEventListener("click", () => setMode("hourly"));
     financeModeBtn.addEventListener("click", () => setMode("finance"));
     questionsModeBtn.addEventListener("click", () => setMode("questions"));
+    wagersModeBtn.addEventListener("click", () => setMode("wagers"));
 
     searchInput.addEventListener("input", () => applyFilters());
     fromDateInput.addEventListener("input", (e) => {
