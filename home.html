@@ -1481,7 +1481,7 @@
         .from("wagers")
         .select("id")
         .eq("user_id", user.id)
-        .eq("wager_date", wagerDate)
+        .eq("date", wagerDate)
         .eq("wager_type", "rivals")
         .maybeSingle();
       
