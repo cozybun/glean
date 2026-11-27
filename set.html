@@ -99,7 +99,7 @@
       background: var(--brand-purple);
       color: white;
       border-radius: 12px;
-      font-weight: 700;
+      font-weight: 800;
       text-decoration: none;
     }
     
@@ -112,17 +112,17 @@
       display: block;
       margin: 0.75rem auto;
       padding: 0.6rem 1rem;
-      background: var(--brand-purple);
+      background: var(--brand-green);
       color: white;
       border: none;
       border-radius: 10px;
-      font-weight: 700;
+      font-weight: 800;
       cursor: pointer;
     }
     
     #set-rules-btn:hover,
     #set-rules-close:hover {
-      background: var(--dark-purple);
+      background: var(--dark-green);
     }
     
     #set-rules-toast {
@@ -272,6 +272,8 @@
   const shadings = ["solid", "striped", "outline"];  
   const deck = [];
   let setStartTime = null;
+  let setsFound = 0;
+  let setMistakes = 0;
   const SUPABASE_URL = "https://ckyqknlxmjqlkqnxhgef.supabase.co";
   const SUPABASE_PUB_KEY = "sb_publishable_lQ27fzzwJf27dUWPEW8UQA_NTY7naO6";
   
@@ -286,7 +288,7 @@
     console.warn("Supabase unavailable:", error.message);
   }
 
-  async function saveSetPR(elapsedSeconds) {
+  async function saveSetPB(elapsedSeconds) {
     if (!client) return null;
   
     try {
@@ -296,7 +298,7 @@
       if (sessionError) throw sessionError;
       if (!session) return null;
   
-      const { data, error } = await client.rpc("save_set_pr", {
+      const { data, error } = await client.rpc("save_set_pb", {
         p_seconds: elapsedSeconds
       });
   
@@ -304,7 +306,30 @@
   
       return data;
     } catch (error) {
-      console.warn("Set PR unavailable:", error.message);
+      console.warn("Set PB unavailable:", error.message);
+      return null;
+    }
+  }
+
+  async function saveSetMistakesPB(mistakes) {
+    if (!client) return null;
+  
+    try {
+      const { data: { session }, error: sessionError } =
+        await client.auth.getSession();
+  
+      if (sessionError) throw sessionError;
+      if (!session) return null;
+  
+      const { data, error } = await client.rpc("save_set_mistakes_pb", {
+        p_mistakes: mistakes
+      });
+  
+      if (error) throw error;
+  
+      return data;
+    } catch (error) {
+      console.warn("Set mistakes PB unavailable:", error.message);
       return null;
     }
   }
@@ -508,8 +533,9 @@
         const message = document.getElementById("set-message");
   
         if (isValidSet(chosenCards)) {
-          message.textContent = "Valid Set! 🎉";
-          message.style.color = "#16a34a";
+          setsFound++;
+          message.textContent = `Valid Set! 🎉 ${setsFound} ${setsFound === 1 ? "Set" : "Sets"} found!`;
+          message.style.color = "var(--brand-green)";
   
           chosenCards.forEach(card => {
             const nextCard = deck.pop();            
@@ -602,22 +628,41 @@
           const timeResult = document.createElement("p");
           timeResult.textContent = `Completion time: ${formattedTime} ⏱️`;
           timeResult.style.textAlign = "center";
-          timeResult.style.fontWeight = "700";
+          timeResult.style.fontWeight = "800";
           
           message.after(timeResult);
-          saveSetPR(elapsedSeconds).then(bestSeconds => {
+          const mistakesResult = document.createElement("p");
+          mistakesResult.textContent = `Mistakes: ${setMistakes} ❌`;
+          mistakesResult.style.textAlign = "center";
+          mistakesResult.style.fontWeight = "800";          
+          timeResult.after(mistakesResult);
+          
+          saveSetPB(elapsedSeconds).then(bestSeconds => {
             if (bestSeconds === null) return;
           
             const bestMinutes = Math.floor(bestSeconds / 60);
             const bestRemainder = bestSeconds % 60;
-            const bestTime = `${bestMinutes}:${String(bestRemainder).padStart(2, "0")}`;
           
-            const prResult = document.createElement("p");
-            prResult.textContent = `Personal best: ${bestTime} 🏆`;
-            prResult.style.textAlign = "center";
-            prResult.style.fontWeight = "700";
+            const bestTime =
+              `${bestMinutes}:${String(bestRemainder).padStart(2, "0")}`;
           
-            timeResult.after(prResult);
+            const pbResult = document.createElement("p");
+            pbResult.textContent = `Personal best: ${bestTime} 🏆`;
+            pbResult.style.textAlign = "center";
+            pbResult.style.fontWeight = "800";
+          
+            timeResult.after(pbResult);
+          });
+          
+          saveSetMistakesPB(setMistakes).then(bestMistakes => {
+            if (bestMistakes === null) return;
+          
+            const mistakesPBResult = document.createElement("p");
+            mistakesPBResult.textContent = `Personal best: ${bestMistakes} 🏆`;
+            mistakesPBResult.style.textAlign = "center";
+            mistakesPBResult.style.fontWeight = "800";
+          
+            mistakesResult.after(mistakesPBResult);
           });
           remaining.forEach(card => {
             card.disabled = true;
@@ -626,8 +671,12 @@
           message.textContent = "Deck empty! Find the remaining Sets! 🃏";
         }
         } else {
-          message.textContent = "Not a Set! Try again 😅";
-          message.style.color = "#dc2626";
+          setMistakes++;
+          message.textContent =
+            setMistakes % 2 === 1
+              ? "Not a Set! Keep looking 🔍"
+              : "Not a Set! Try again 😅";
+          message.style.color = "var(--brand-red)";
         }
   
         chosenCards.forEach(chosen => chosen.classList.remove("selected"));
