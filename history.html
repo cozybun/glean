@@ -607,6 +607,7 @@
           <button id="tempsModeBtn" class="button active" type="button"> Temps </button>
           <button id="financeModeBtn" class="button secondary" type="button"> Finance </button>
           <button id="questionsModeBtn" class="button secondary" type="button"> Questions </button>
+          <button id="wagersModeBtn" class="button secondary" type="button"> Wagers </button>
         </div>
       </div>
     
@@ -721,6 +722,7 @@
     const tempsModeBtn = document.getElementById("tempsModeBtn");
     const financeModeBtn = document.getElementById("financeModeBtn");
     const questionsModeBtn = document.getElementById("questionsModeBtn");
+    const wagersModeBtn = document.getElementById("wagersModeBtn");
     const dailyModeBtn = document.getElementById("dailyModeBtn");
     const hourlyModeBtn = document.getElementById("hourlyModeBtn");
     const tempsTypeControl = document.getElementById("tempsTypeControl");
@@ -759,6 +761,13 @@
       questions: {
         table: "questions_scores",
         label: "Questions",
+        dateLabel: "Date",
+        hasHour: false,
+        select: "*"
+      },
+      wagers: {
+        table: "wagers",
+        label: "Wagers",
         dateLabel: "Date",
         hasHour: false,
         select: "*"
@@ -1198,7 +1207,7 @@
     function visibleColumnCount() {
       if (state.mode === "finance") return 8;
       if (state.mode === "questions") return 6;
-    
+      if (state.mode === "wagers") return 5;    
       return state.mode === "daily" ? 8 : 6;
     }
 
@@ -1230,6 +1239,17 @@
         `;
         return;
       }
+
+      if (state.mode === "wagers") {
+        headerRow.innerHTML = `
+          <th data-sort="date"> Date <span class="sort-arrow"></span></th>
+          <th> Type </th>
+          <th> Wager </th>
+          <th> Result </th>
+          <th> Coins 🪙 </th>
+        `;
+        return;
+      }
     
       headerRow.innerHTML = `
         <th data-sort="date"> ${state.mode === "hourly" ? "Date & Hour" : "Date"} <span class="sort-arrow"></span></th>
@@ -1248,15 +1268,16 @@
       const isHourly = state.mode === "hourly";
       const isFinance = state.mode === "finance";
       const isQuestions = state.mode === "questions";
+      const isWagers = state.mode === "wagers";
     
-      tempsTypeControl.style.display = isFinance || isQuestions ? "none" : "";
+      tempsTypeControl.style.display = isFinance || isQuestions || isWagers ? "none" : "";
       renderTableHeader();
     
       if (table) {
         table.classList.toggle("hourly-mode", isHourly);
         table.classList.toggle("daily-mode", isDaily);
       }
-      document.querySelector(".controls").classList.toggle("compact-controls", isFinance || isQuestions);
+      document.querySelector(".controls").classList.toggle("compact-controls", isFinance || isQuestions || isWagers);
     }
 
     function applyFilters(resetPage = true) {
@@ -1287,7 +1308,24 @@
             const isAssetSearch = ["gas", "btc", "bitcoin", "gold"].some((term) => term.includes(query));      
             return date.includes(query) || isAssetSearch;
           }
-      
+        
+          if (state.mode === "wagers") {
+            const type = row.wager_type === "rivals"
+              ? "all rivals"
+              : String(row.wager_type || "").toLowerCase();
+          
+            const result = row.status !== "settled"
+              ? "pending"
+              : row.coins_change > 0
+                ? "win"
+                : row.coins_change < 0
+                  ? "loss"
+                  : "mixed";
+          
+            return date.includes(query)
+              || type.includes(query)
+              || result.includes(query);
+          }
           const city = (row.city_name || "").toLowerCase();
           return city.includes(query) || date.includes(query);
         });
@@ -1542,6 +1580,50 @@
         });
       });
     }
+
+    function renderWagersRows(pageRows) {
+      pageRows.forEach((row) => {
+        const tr = document.createElement("tr");
+        const isSettled = row.status === "settled";
+    
+        const tdDate = document.createElement("td");
+        tdDate.textContent = formatDisplayDate(row, false);
+    
+        const tdType = document.createElement("td");
+        tdType.textContent = row.wager_type === "rivals"
+          ? "All"
+          : row.wager_type;
+    
+        const tdWager = document.createElement("td");
+        tdWager.textContent = formatInt(row.amount);
+    
+        const tdResult = document.createElement("td");
+    
+        if (!isSettled) {
+          tdResult.textContent = "⏳ Pending";
+        } else if (row.coins_change > 0) {
+          tdResult.textContent = "👑 Win";
+        } else if (row.coins_change < 0) {
+          tdResult.textContent = "💀 Loss";
+        } else {
+          tdResult.textContent = "🤝 Mixed";
+        }
+    
+        const tdCoins = document.createElement("td");
+        tdCoins.className = "coins-cell";
+        tdCoins.textContent = isSettled
+          ? formatAuraValue(row.coins_change)
+          : "—";
+    
+        tr.appendChild(tdDate);
+        tr.appendChild(tdType);
+        tr.appendChild(tdWager);
+        tr.appendChild(tdResult);
+        tr.appendChild(tdCoins);
+    
+        tbody.appendChild(tr);
+      });
+    }
     
     function renderRows() {
       tbody.innerHTML = "";
@@ -1571,6 +1653,10 @@
       }
       if (state.mode === "questions") {
         renderQuestionsRows(pageRows);
+        return;
+      }
+      if (state.mode === "wagers") {
+        renderWagersRows(pageRows);
         return;
       }
 
