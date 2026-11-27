@@ -1221,6 +1221,18 @@
   const scoreFaqClose = document.getElementById("scoreFaqClose");
 
   let currentUserId = null;
+  function markScoresViewed(category, scoreKey) {
+    if (!currentUserId || !scoreKey) return;
+  
+    try {
+      localStorage.setItem(
+        `glean_scores_viewed_${currentUserId}_${category}`,
+        String(scoreKey)
+      );
+    } catch (error) {
+      console.warn("Unable to save viewed scores:", error);
+    }
+  }
   let totalCoins = 0;
   let totalAura = 0;
   let shareTimer = null;
@@ -2973,6 +2985,10 @@
     revealRows(scores.length, false, currentStreak, totalCoins, totalAura);
 
     if (dailySummary) {
+      if (activeCategory === "temps" && activeMode === "daily" && scores.some(hasForecast)) {
+        markScoresViewed("temps_daily", ydayDate);
+      }
+    
       setTimeout(() => {
         showScoreToast({
           category: "temps",
