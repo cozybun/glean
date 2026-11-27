@@ -23,6 +23,8 @@
       text-align: center;
     }
 
+    #set-message { margin-top: 1.5rem; }
+
     body:has(#set-board) {
       max-width: none;
       margin: 0;
@@ -170,10 +172,28 @@
       width: 40px;
       height: 40px;
     }
+
+    .music-wrap {
+      position: absolute;
+      top: 10px;
+      right: 10px;
+    }
   </style>
 </head>
 
 <body>
+  <div class="music-wrap">
+    <audio id="bgMusic" preload="none" aria-label="Background music"></audio>
+    <button
+      id="musicToggle"
+      type="button"
+      aria-label="Toggle background music"
+      title="Toggle background music"
+    >
+      🔇
+    </button>
+    <span id="musicStatus" aria-live="polite" style="display:none;"></span>
+  </div>
   <main>
     <a href="home.html" class="set-home-btn"> Go to Home </a>
     <h1> Set 🃏 </h1>
@@ -200,13 +220,13 @@
       <div id="set-rules-example"></div>    
       <p>
         <strong> ✅ Valid Set! </strong><br>
-        Same shape, number, and shading. Different colors.
+        Same shape, number, & shading. Different colors.
       </p>
     
       <p>
-        Correct Sets are replaced with new cards when available. <br>
-        Keep finding Sets until no more remain, then you win! <br>
-        Completion time & number of mistakes are logged. Have fun! 😊
+        New cards replace completed Sets. <br>
+        Find all possible Sets to win. <br>
+        Time & mistakes are tracked. Have fun! 😊
       </p>
     
       <button id="set-rules-close" type="button">
@@ -535,7 +555,7 @@
   
         if (isValidSet(chosenCards)) {
           setsFound++;
-          message.textContent = `Valid Set! 🎉 ${setsFound} ${setsFound === 1 ? "Set" : "Sets"} found!`;
+          message.innerHTML = `Valid Set! 🎉 <strong>${setsFound}</strong> ${setsFound === 1 ? "Set" : "Sets"} found!`;
           message.style.color = "var(--brand-green)";
   
           chosenCards.forEach(card => {
@@ -624,14 +644,19 @@
           const seconds = elapsedSeconds % 60;
           const formattedTime = `${minutes}:${String(seconds).padStart(2, "0")}`;
           
-          message.textContent = `I won the game! 🎉 No more Sets remain!`;
+          message.innerHTML = `<strong> No more Sets remain! 🎉 I won the game! 🥳 </strong>`;
           
           const timeResult = document.createElement("p");
           timeResult.textContent = `Completion time: ${formattedTime} ⏱️`;
           timeResult.style.textAlign = "center";
           timeResult.style.fontWeight = "800";
           
-          message.after(timeResult);
+          const setsResult = document.createElement("p");
+          setsResult.textContent = `Sets found: ${setsFound} 🃏`;
+          setsResult.style.textAlign = "center";
+          setsResult.style.fontWeight = "800";
+          message.after(setsResult);
+          setsResult.after(timeResult);
           const mistakesResult = document.createElement("p");
           mistakesResult.textContent = `Mistakes: ${setMistakes} ❌`;
           mistakesResult.style.textAlign = "center";
@@ -710,5 +735,6 @@
         </div>
       `).join("");
 </script>
+<script src="music.js"></script>
 </body>
 </html>
