@@ -327,9 +327,8 @@
       min-width: 1080px;
     }
 
-    .history-table.hourly-mode {
-      min-width: 860px;
-    }
+    .history-table.hourly-mode { min-width: 860px; }
+    .history-table.wagers-mode { min-width: 600px; }
 
     thead th {
       background: #f8fafc;
@@ -597,7 +596,7 @@
       </div>
     </header>
 
-    <p class="subtitle"> Filter, search, sort, and paginate my forecasts </p>
+    <p class="subtitle"> Filter, search, sort, and paginate my forecasts and wagers </p>
 
     <section class="card">
       <div class="category-control">
@@ -684,6 +683,9 @@
         <div id="historySourceLine" class="source-line">Sources:</div>
       </div>
 
+      <div id="wagerTotal" style="display:none; text-align:center; margin-top:16px; font-weight:700;">
+        Total Net Wager Coins: <span id="wagerTotalValue">0</span> 🪙
+      </div>
       <div class="pager">
         <span id="pagerInfo" class="pager-info"> 0 entries </span>
         <div class="pager-bottom">
@@ -730,6 +732,8 @@
     const prevPageBtn = document.getElementById("prevPage");
     const nextPageBtn = document.getElementById("nextPage");
     const pagerInfo = document.getElementById("pagerInfo");
+    const wagerTotal = document.getElementById("wagerTotal");
+    const wagerTotalValue = document.getElementById("wagerTotalValue");
     const tbody = document.getElementById("historyBody");
     const table = document.getElementById("historyTable");
     const tableHeaders = document.querySelectorAll("th[data-sort]");
@@ -1271,11 +1275,13 @@
       const isWagers = state.mode === "wagers";
     
       tempsTypeControl.style.display = isFinance || isQuestions || isWagers ? "none" : "";
+      wagerTotal.style.display = isWagers ? "block" : "none";
       renderTableHeader();
     
       if (table) {
         table.classList.toggle("hourly-mode", isHourly);
         table.classList.toggle("daily-mode", isDaily);
+        table.classList.toggle("wagers-mode", isWagers);
       }
       document.querySelector(".controls").classList.toggle("compact-controls", isFinance || isQuestions || isWagers);
     }
@@ -1745,7 +1751,9 @@
 
     function updateDateHeaderLabel() {
       const cfg = modeConfigFor(state.mode);
-      subtitleEl.textContent = `Filter, search, sort, and paginate my ${cfg.label.toLowerCase()} forecasts.`;
+      subtitleEl.textContent = state.mode === "wagers"
+        ? "Filter, search, sort, and paginate my wagers."
+        : `Filter, search, sort, and paginate my ${cfg.label.toLowerCase()} forecasts.`;
       updateSortIndicators();
     }
 
@@ -1835,6 +1843,24 @@
 
       setStatus("Loading forecast history...", "loading");
       renderSourceLine(state.mode);
+
+      if (state.mode === "wagers") {
+        wagerTotalValue.textContent = "…";
+      
+        const { data, error } = await client
+          .from("user_stats")
+          .select("wager_coins")
+          .eq("user_id", userId)
+          .maybeSingle();
+      
+        if (error) {
+          console.warn("Unable to load wager coins:", error);
+          wagerTotalValue.textContent = "Unavailable";
+        } else {
+          wagerTotalValue.textContent =
+            formatAuraValue(data?.wager_coins ?? 0);
+        }
+      }
 
       if (state.mode === "questions") {
         const [answersResult, actualsResult] = await Promise.all([
