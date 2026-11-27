@@ -410,6 +410,17 @@
     #questions-button:hover {
       background: var(--dark-purple);
     }
+
+    #minigames-button {
+      background: var(--dark-orange);
+      box-shadow: 0 2px 10px rgba(196, 124, 50, 0.30);
+      margin: 2.5rem auto 0;
+      width: min(200px, 100%);
+    }
+    
+    #minigames-button:hover {
+      background: var(--dark-orange);
+    }
     
     #restore-btn:hover {
       background: var(--dark-red);
@@ -730,7 +741,14 @@
       Questions 🧠
     </a>
   </div>
-  
+
+    <a
+      id="minigames-button"
+      class="category-button"
+      href="/set"
+    >
+      Minigames 🃏
+    </a>
     <section id="coin-history-card" class="coin-history-card" hidden>
     <div class="coin-history-toggle" role="group" aria-label="Coin history view">
       <button id="show-current-coins" class="active" type="button">
