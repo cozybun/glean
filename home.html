@@ -193,9 +193,7 @@
       font-weight: 700;
     }
 
-    #save-account:hover {
-      background: var(--dark-blue);
-    }
+    #save-account:hover { background: var(--dark-blue); }
 
     #close-restore,
     #close-account-settings {
@@ -209,9 +207,7 @@
       background: #1e293b;
     }
 
-    #account-status {
-      margin-top: 0.6rem;
-    }
+    #account-status { margin-top: 0.6rem; }
 
     /* Floating tiny gear icon */
     #open-account-settings {
@@ -322,19 +318,14 @@
       border-radius: 16px;
     }
     
-    #rivals-progress[hidden] {
-      display: none;
-    }
+    #rivals-progress[hidden] { display: none; }
+    #rivals-progress p { margin: 0.8rem 0 0.4rem; }
     
     #rivals-progress h3 {
       margin: 0 0 1rem;
       font-size: 1.3rem;
     }
-    
-    #rivals-progress p {
-      margin: 0.8rem 0 0.4rem;
-    }
-    
+        
     #rivals-progress progress {
       display: block;
       width: 100%;
@@ -380,47 +371,37 @@
       justify-content: center;
     }
     
-    .category-button:active {
-      transform: scale(0.98);
-    }
+    .category-button:active { transform: scale(0.98); }
 
     #temps-button {
       background: var(--brand-blue);
       box-shadow: 0 2px 10px rgba(79, 124, 172, 0.30);
     }
     
-    #temps-button:hover {
-      background: var(--dark-blue);
-    }
+    #temps-button:hover { background: var(--dark-blue); }
     
     #finance-button {
       background: var(--brand-green);
       box-shadow: 0 2px 10px rgba(34, 139, 34, 0.30);
     }
     
-    #finance-button:hover {
-      background: var(--dark-green);
-    }
+    #finance-button:hover { background: var(--dark-green); }
     
     #questions-button {
       background: var(--brand-purple);
       box-shadow: 0 2px 10px rgba(124, 92, 191, 0.30);
     }
     
-    #questions-button:hover {
-      background: var(--dark-purple);
-    }
+    #questions-button:hover { background: var(--dark-purple); }
 
     #minigames-button {
-      background: #CC5500;
+      background: #EC5800;
       box-shadow: 0 2px 10px rgba(196, 124, 50, 0.30);
       margin: 5rem auto 0;
       width: min(200px, 100%);
     }
     
-    #minigames-button:hover {
-      background: #a36324;
-    }
+    #minigames-button:hover { background: #CC5500; }
     
     #restore-btn:hover {
       background: var(--dark-red);
@@ -1552,7 +1533,7 @@
         };
         
         const players = [
-          { name: "💜 Me", id: user.id, qs: questions },
+          { name: "🐰 Me", id: user.id, qs: questions },
           { name: "🐍 Snake", id: snakeId, qs: null },
           { name: "🐺 Wolf", id: wolfId, qs: null }
         ];
@@ -2005,7 +1986,6 @@
     });
 
     saveAccountBtn.addEventListener("click", handleSaveAccount);
-
     document.addEventListener("DOMContentLoaded", async () => {
       accountBackdrop.style.pointerEvents = "none";
       await handleRecoveryCallback();
