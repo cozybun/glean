@@ -2930,6 +2930,17 @@
       if (streakEl) streakEl.textContent = "—";
       renderScoreFractionLine(null, false);
       revealRows(scores.length, true, 0, totalCoins, 0);
+
+      if (activeCategory === "temps" && activeMode === "hourly") {
+        const viewedScores = scores
+          .filter(hasHourlyForecast)
+          .map(s => `${s.date}:${s.hour}:${s.city_id}`)
+          .sort();
+
+        if (viewedScores.length) {
+          markScoresViewed("temps_hourly", JSON.stringify(viewedScores));
+        }
+      }
       return;
     }
 
