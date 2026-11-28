@@ -2705,6 +2705,10 @@
     if (financeFraction) { financeGridSlot.appendChild(financeFraction); }
     buildFinanceShare(data);
     if (anyScored && finalScoringTimePassed) {
+      if (activeCategory === "finance") {
+        markScoresViewed("finance", todayInPT);
+      }
+    
       setTimeout(() => {
         showScoreToast({
           category: "finance",
