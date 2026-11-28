@@ -256,6 +256,50 @@ async function resolveAuthUserId() {
   return sessionData?.session?.user?.id || null;
 }
 
+async function updateFinanceScoreGlow() {
+  const btn = document.getElementById("dailyScoreBtn");
+  if (!btn) return;
+
+  btn.classList.remove("new-scores");
+
+  try {
+    const userId = await resolveAuthUserId();
+    if (!userId) return;
+
+    const scoreDate = getPTTodayYmd();
+    const viewedKey = `glean_scores_viewed_${userId}_finance`;
+
+    if (localStorage.getItem(viewedKey) === scoreDate) return;
+
+    const nowPT = new Intl.DateTimeFormat("en-GB", {
+      timeZone: FINANCE_TIMEZONE,
+      hour: "2-digit",
+      minute: "2-digit",
+      hourCycle: "h23"
+    }).format(new Date());
+
+    if (nowPT < "14:10") return;
+
+    const { data, error } = await client
+      .from("finance_scores")
+      .select("forecast_gas, forecast_btc, forecast_gold, coins_gas, coins_btc, coins_gold")
+      .eq("user_id", userId)
+      .eq("date", scoreDate)
+      .maybeSingle();
+
+    if (error) throw error;
+
+    const hasScore = ["gas", "btc", "gold"].some(asset =>
+      data?.[`forecast_${asset}`] != null &&
+      data?.[`coins_${asset}`] != null
+    );
+
+    btn.classList.toggle("new-scores", hasScore);
+  } catch (error) {
+    console.warn("Unable to check new Finance scores:", error);
+  }
+}
+
 async function fetchYesterdayPrice(assetKey) {
   if (assetKey === "btc") return fetchYesterdayBtcPrice();
   if (assetKey === "gold") return fetchYesterdayGoldPrice();
@@ -603,4 +647,11 @@ if (forecastDaySelect) {
 if (document.getElementById("financeGrid")) {
   buildFinanceGrid();
   scheduleMidnightRefresh();
+  void updateFinanceScoreGlow();
 }
+
+window.addEventListener("pageshow", (event) => {
+  if (event.persisted) {
+    void updateFinanceScoreGlow();
+  }
+});
