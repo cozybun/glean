@@ -2615,6 +2615,35 @@ function initDailyHelpModal() {
   modal.classList.add("hidden");
 }
 
+async function updateDailyScoreGlow() {
+  const btn = document.getElementById("dailyScoreBtn");
+  if (!btn) return;
+
+  btn.classList.remove("new-scores");
+  if (!userId) return;
+
+  try {
+    const scoreDate = addDaysYmd(getPTTodayYmd(), -1);
+    const viewedKey = `glean_scores_viewed_${userId}_temps_daily`;
+
+    if (localStorage.getItem(viewedKey) === scoreDate) return;
+
+    const { data, error } = await client
+      .from("daily_scores")
+      .select("forecast_high, forecast_low")
+      .eq("user_id", userId)
+      .eq("date", scoreDate)
+      .or("forecast_high.not.is.null,forecast_low.not.is.null")
+      .limit(1);
+
+    if (error) throw error;
+
+    btn.classList.toggle("new-scores", Boolean(data?.length));
+  } catch (error) {
+    console.warn("Unable to check new Temps scores:", error);
+  }
+}
+
 // Keep daily forecast date UI synchronized with PT auto-selection rules and return whether date UI changed
 function syncDailyDateUI(force = false) {
   const didDateUIChange = force || applyNoonAutoSelect();
@@ -2647,10 +2676,9 @@ document.addEventListener('DOMContentLoaded', async () => {  // main init
     setStatus("");  // once session exists before any form logic runs, the first forecast save succeeds, and the warning clears
   }
 
+  void updateDailyScoreGlow();
   await loadCities();
-  if (document.getElementById('hourSelector')) {
-    buildHourSelector();
-  }
+  if (document.getElementById('hourSelector')) { buildHourSelector(); }
 
   let hourlyRolloverTimer = null;
   function getETOffsetMinutes(date = new Date()) {
@@ -2707,5 +2735,10 @@ document.addEventListener('DOMContentLoaded', async () => {  // main init
     hourlyCurrentDateKey = updateHourlyCurrentDate();
     await buildHourlyGrid();
     scheduleHourlyPageRollover();
+  }
+});
+window.addEventListener("pageshow", (event) => {
+  if (event.persisted) {
+    void updateDailyScoreGlow();
   }
 });
