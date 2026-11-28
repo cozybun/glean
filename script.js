@@ -2615,6 +2615,70 @@ function initDailyHelpModal() {
   modal.classList.add("hidden");
 }
 
+async function updateHourlyScoreGlow() {
+  if (!document.getElementById("hourlyForm")) return;
+
+  const btn = document.getElementById("hourlyScoreBtn");
+  if (!btn) return;
+
+  btn.classList.remove("new-scores");
+  if (!userId) return;
+
+  try {
+    const parts = Object.fromEntries(
+      new Intl.DateTimeFormat("en-US", {
+        timeZone: "America/New_York",
+        year: "numeric",
+        month: "2-digit",
+        day: "2-digit",
+        hour: "2-digit",
+        hourCycle: "h23"
+      }).formatToParts(new Date()).map(
+        ({ type, value }) => [type, value]
+      )
+    );
+
+    const today = `${parts.year}-${parts.month}-${parts.day}`;
+    const hour = Number(parts.hour);
+    const startDate = hour >= 13 ? today : addDaysYmd(today, -1);
+
+    const viewedKey = `glean_scores_viewed_${userId}_temps_hourly`;
+    const viewedScores = new Set(
+      JSON.parse(localStorage.getItem(viewedKey) || "[]")
+    );
+
+    const { data, error } = await client
+      .from("hourly_scores")
+      .select("*")
+      .eq("user_id", userId)
+      .gte("date", startDate)
+      .lte("date", today);
+
+    if (error) throw error;
+
+    const hasNewScore = (data || []).some(s => {
+      const inWindow =
+        (s.date === startDate && Number(s.hour) >= 13 &&
+          (startDate !== today || Number(s.hour) <= hour)) ||
+        (startDate !== today && s.date === today &&
+          Number(s.hour) <= hour);
+
+      const hasForecast = [
+        "forecast_temp", "forecast", "predicted_temp",
+        "forecast_value", "temp_forecast", "guess", "prediction"
+      ].some(key => s[key] != null && s[key] !== "");
+
+      const scoreKey = `${s.date}:${s.hour}:${s.city_id}`;
+
+      return inWindow && hasForecast && !viewedScores.has(scoreKey);
+    });
+
+    btn.classList.toggle("new-scores", hasNewScore);
+  } catch (error) {
+    console.warn("Unable to check new Hourly scores:", error);
+  }
+}
+
 async function updateDailyScoreGlow() {
   if (!document.getElementById("tempsForm")) return;
 
@@ -2679,6 +2743,7 @@ document.addEventListener('DOMContentLoaded', async () => {  // main init
   }
 
   void updateDailyScoreGlow();
+  void updateHourlyScoreGlow();
   await loadCities();
   if (document.getElementById('hourSelector')) { buildHourSelector(); }
 
@@ -2742,5 +2807,6 @@ document.addEventListener('DOMContentLoaded', async () => {  // main init
 window.addEventListener("pageshow", (event) => {
   if (event.persisted) {
     void updateDailyScoreGlow();
+    void updateHourlyScoreGlow();
   }
 });
