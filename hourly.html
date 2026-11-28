@@ -107,6 +107,26 @@
       box-shadow: 0 8px 18px var(--shadow-green);
     }
 
+        #hourlyScoreBtn.new-scores {
+      animation: scoreGlow 3s ease-in-out infinite;
+    }
+
+    @keyframes scoreGlow {
+      0%, 100% {
+        box-shadow: 0 0 8px 2px rgba(255, 193, 7, 0.35);
+      }
+      50% {
+        box-shadow: 0 0 22px 6px rgba(255, 193, 7, 0.75);
+      }
+    }
+
+    @media (prefers-reduced-motion: reduce) {
+      #hourlyScoreBtn.new-scores {
+        animation: none;
+        box-shadow: 0 0 16px 4px rgba(255, 193, 7, 0.55);
+      }
+    }
+
     #hourSelector {
       display: flex;
       flex-wrap: wrap;
