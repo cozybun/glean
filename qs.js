@@ -272,6 +272,51 @@ function transitionToNext() {
   }, 220);
 }
 
+async function updateQuestionsScoreGlow() {
+  const btn = document.getElementById("view-score");
+  if (!btn) return;
+
+  btn.classList.remove("new-scores");
+  if (!currentUserId) return;
+
+  try {
+    const date = new Date(`${todayInPT}T00:00:00Z`);
+    date.setUTCDate(date.getUTCDate() - 1);
+    const scoreDate = date.toISOString().slice(0, 10);
+
+    const viewedKey = `glean_scores_viewed_${currentUserId}_questions`;
+
+    if (localStorage.getItem(viewedKey) === scoreDate) return;
+
+    const { data, error } = await client
+      .from("questions_scores")
+      .select("coins_earned_coins, toughest_category_coins")
+      .eq("user_id", currentUserId)
+      .eq("date", scoreDate)
+      .maybeSingle();
+
+    if (error) throw error;
+    if (!data) return;
+
+    const { data: answer, error: answerError } = await client
+      .from("questions_answers")
+      .select("coins_earned, toughest_category")
+      .eq("user_id", currentUserId)
+      .eq("date", scoreDate)
+      .maybeSingle();
+
+    if (answerError) throw answerError;
+
+    const hasScore =
+      (answer?.coins_earned != null && data.coins_earned_coins != null) ||
+      (answer?.toughest_category != null && data.toughest_category_coins != null);
+
+    btn.classList.toggle("new-scores", hasScore);
+  } catch (error) {
+    console.warn("Unable to check new Questions scores:", error);
+  }
+}
+
 function renderComplete() {
   questionProgressEl.style.display = "none";
   questionTextEl.style.display = "none";
@@ -313,6 +358,7 @@ function renderComplete() {
     .addEventListener("click", () => {
       localStorage.setItem("scoreCategory", "questions");
     });
+  void updateQuestionsScoreGlow();
 }
 
 function startEditing() {
@@ -459,3 +505,8 @@ async function initQuestions() {
 }
 
 initQuestions();
+window.addEventListener("pageshow", (event) => {
+  if (event.persisted) {
+    void updateQuestionsScoreGlow();
+  }
+});
