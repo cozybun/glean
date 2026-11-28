@@ -2616,6 +2616,8 @@ function initDailyHelpModal() {
 }
 
 async function updateDailyScoreGlow() {
+  if (!document.getElementById("tempsForm")) return;
+
   const btn = document.getElementById("dailyScoreBtn");
   if (!btn) return;
 
