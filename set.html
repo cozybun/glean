@@ -23,9 +23,40 @@
       text-align: center;
     }
 
-    #set-message {
-      margin-top: 1.5rem;
+    #set-count {
+      margin: 1.5rem 0 0.3rem;
+      text-align: center;
       font-size: 1.5rem;
+      font-weight: 800;
+    }
+
+    #set-message {
+      margin: 0;
+      font-size: 1.5rem;
+      line-height: 1.5;
+      min-height: 3em;
+    }
+
+    #set-results {
+      display: flex;
+      justify-content: center;
+      align-items: flex-start;
+      gap: 3rem;
+      margin: 1rem auto;
+      text-align: center;
+    }
+
+    #set-results p {
+      margin: 0.5rem 0;
+      font-weight: 800;
+    }
+
+    @media (max-width: 480px) {
+      #set-results {
+        flex-direction: column;
+        align-items: center;
+        gap: 0.8rem;
+      }
     }
 
     body:has(#set-board) {
@@ -268,7 +299,8 @@
         Understood! ✅
       </button>
     </dialog>
-    <p id="set-message" aria-live="polite"> Select 3 cards to find a Set! 🃏</p>
+    <p id="set-count"> Sets found: 0 </p>
+    <p id="set-message" aria-live="polite"> Select 3 cards to find a Set! 🃏 </p>
     
     <div id="set-board">
       <button class="set-card" data-shape="bun" data-color="green" data-number="1" data-shading="solid"> 🐰</button>
@@ -590,7 +622,8 @@
   
         if (isValidSet(chosenCards)) {
           setsFound++;
-          message.innerHTML = `Valid Set! 🎉 <strong>${setsFound}</strong> ${setsFound === 1 ? "Set" : "Sets"} found!`;
+          document.getElementById("set-count").textContent = `Sets found: ${setsFound}`;
+          message.textContent = "Valid Set! 🎉";
           message.style.color = "var(--brand-green)";
   
           chosenCards.forEach(card => {
@@ -686,17 +719,19 @@
           timeResult.style.textAlign = "center";
           timeResult.style.fontWeight = "800";
           
-          const setsResult = document.createElement("p");
-          setsResult.textContent = `Sets found: ${setsFound} 🃏`;
-          setsResult.style.textAlign = "center";
-          setsResult.style.fontWeight = "800";
-          message.after(setsResult);
-          setsResult.after(timeResult);
+          const results = document.createElement("div");
+          results.id = "set-results";
+          const timeColumn = document.createElement("div");
+          const mistakesColumn = document.createElement("div");
+          results.append(timeColumn, mistakesColumn);
+          message.after(results);
+          timeColumn.append(timeResult);
+          
           const mistakesResult = document.createElement("p");
           mistakesResult.textContent = `Mistakes: ${setMistakes} ❌`;
           mistakesResult.style.textAlign = "center";
           mistakesResult.style.fontWeight = "800";          
-          timeResult.after(mistakesResult);
+          mistakesColumn.append(mistakesResult);
           
           saveSetPB(elapsedSeconds).then(bestSeconds => {
             if (bestSeconds === null) return;
