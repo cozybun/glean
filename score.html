@@ -2492,6 +2492,17 @@
     
       </div>
     `;
+    if (
+      activeCategory === "questions" &&
+      !answerError &&
+      !actualError &&
+      (
+        (answer?.coins_earned != null && data.coins_earned_coins != null) ||
+        (answer?.toughest_category != null && data.toughest_category_coins != null)
+      )
+    ) {
+      markScoresViewed("questions", ydayDate);
+    }
   }
   
   async function loadFinanceScore() {
