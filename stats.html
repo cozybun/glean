@@ -290,6 +290,16 @@
             <div class="label"> 🌟 Current Streak </div>
             <p class="value" id="currentStreak">—</p>
           </article>
+
+          <article class="stat">
+            <div class="label"> ⏱️ Set Time PB </div>
+            <p class="value" id="setPB">—</p>
+          </article>
+
+          <article class="stat">
+            <div class="label"> 🎯 Set Mistakes PB </div>
+            <p class="value" id="setMistakesPB">—</p>
+          </article>
         </div>
 
         <p class="meta" id="lastForecast"> Last forecast: — </p>
@@ -421,6 +431,17 @@
         totalCoinsEl.textContent = cleanNumber(Number(data.total_coins ?? 0), 0, 2);
         coinsEl.textContent = cleanNumber(Number(data.coins ?? 0), 0, 2);
         currentStreakEl.textContent = cleanNumber(streak, 0, 0);
+        const setPB = data.set_pb;
+
+        document.getElementById("setPB").textContent =
+          setPB == null
+            ? "—"
+            : `${Math.floor(setPB / 60)}:${String(setPB % 60).padStart(2, "0")}`;
+
+        document.getElementById("setMistakesPB").textContent =
+          data.set_mistakes_pb == null
+            ? "—"
+            : cleanNumber(data.set_mistakes_pb, 0, 0);
 
         setAuraDisplay(aura);
         auraLine.textContent = friendlyAuraLine(aura);
